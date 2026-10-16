@@ -74,6 +74,7 @@ p { margin: 0 0 1em; }
 code { font-size: 0.92em; background: var(--wolkengrau); padding: 0.05em 0.35em; border-radius: 3px; }
 
 .rahmen { max-width: var(--breite); margin: 0 auto; padding: 0 var(--rand); }
+.rahmen-breit { max-width: none; }
 .schmal { max-width: calc(var(--lese) + 2 * var(--rand)); margin-left: auto; margin-right: auto; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .skip { position: absolute; left: -999px; top: 8px; background: var(--navy); color: var(--weiss); padding: 8px 14px; z-index: 10; }

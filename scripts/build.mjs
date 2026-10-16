@@ -586,7 +586,7 @@ function detailseite() {
     <p class="lead">Die erfassten Bedingungen aller Angebote für Endkunden. Quellen und Wortlaut auf den Seiten der einzelnen Angebote.</p>
   </div>
 </section>
-<div class="rahmen detail">
+<div class="rahmen rahmen-breit detail">
   <div class="abschnitt-kopf">
     <p class="meta">${endkunden.length} Angebote · Reihenfolge wie in der Übersicht · Datenstand ${datum(STAND)}</p>
     ${ansichtWechsel(L, 'detail')}
