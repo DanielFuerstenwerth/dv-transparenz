@@ -306,5 +306,8 @@ blockquote { margin: 6px 0 0; padding: 2px 0 2px 12px; border-left: 2px solid va
 @media print {
   .kopf, .filter, .fuss nav, .menue { display: none; }
   .auftakt { background: none; }
+  tr, .dl-karte, .gruppe h2, .wert { break-inside: avoid; }
+  .gruppe h2 { break-after: avoid; }
+  .uebersicht { min-width: 0; }
 }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
