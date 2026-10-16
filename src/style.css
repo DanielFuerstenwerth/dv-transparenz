@@ -305,6 +305,81 @@ blockquote { margin: 6px 0 0; padding: 2px 0 2px 12px; border-left: 2px solid va
 .fuss-hinweis { grid-column: 1 / -1; padding-top: 20px; border-top: 1px solid rgba(169, 201, 239, 0.3); }
 @media (max-width: 800px) { .fuss-innen { grid-template-columns: 1fr; } }
 
+
+/* Liste der Angebote (Übersicht) */
+:root { --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; }
+.ki-hinweis { font-size: 13px; line-height: 1.45; color: var(--tinte); background: var(--solargelb-flaeche); border-left: 3px solid var(--solargelb); padding: 6px 12px; margin: 6px 0 16px; width: fit-content; max-width: 100%; }
+.ki-hinweis a { color: var(--navy); }
+.dvliste { font-size: 14px; min-width: 1100px; }
+.dvliste thead th { font-family: var(--mono); font-size: 11.5px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; padding: 9px 12px; }
+.dvliste tbody tr:nth-child(even) { background: none; }
+.dvliste tbody th, .dvliste tbody td { padding: 12px; line-height: 1.45; }
+.dvliste th.gr { width: 165px; background: var(--wolkengrau); border-right: 1px solid var(--linie); border-bottom: 1px solid var(--navy); }
+.gr-name { display: block; color: var(--navy); font-weight: 600; font-size: 14.5px; line-height: 1.3; }
+.gr-sort { display: block; margin-top: 5px; font-family: var(--mono); font-size: 11.5px; line-height: 1.35; color: var(--blaugrau); }
+.gr-sort::before { content: "↓ "; }
+.dvliste th.an { min-width: 160px; }
+.dvliste th.an a { font-weight: 600; color: var(--navy); text-decoration: none; }
+.dvliste th.an a:hover { text-decoration: underline; }
+.dvliste td.st { min-width: 180px; max-width: 250px; }
+.dvliste td.ei { min-width: 230px; }
+.dvliste td.pr { min-width: 260px; }
+.dvliste td.li { white-space: nowrap; }
+.punkt { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 7px; vertical-align: 0.04em; box-sizing: border-box; }
+.punkt.st-verfuegbar { background: var(--kobalt); }
+.punkt.st-eingeschraenkt { border: 2px solid var(--kobalt); }
+.punkt.st-vorregistrierung, .punkt.st-angekuendigt { background: var(--solargelb); border: 1px solid var(--navy); }
+.punkt.st-pausiert { border: 2px solid var(--graphit); }
+.punkt.st-eingestellt { background: var(--graphit); }
+.punkt.st-unbekannt { border: 1px dashed var(--blaugrau); }
+.zeilen { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.k, .preis dt { font-family: var(--mono); font-size: 11px; color: var(--blaugrau); text-transform: uppercase; letter-spacing: 0.04em; }
+.zeilen .k { margin-right: 3px; }
+.unsicher { font-family: var(--mono); font-size: 11px; color: var(--navy); background: var(--solargelb-flaeche); border: 1px solid var(--solargelb); border-radius: 2px; padding: 0 4px; }
+.preis { margin: 0; display: grid; gap: 4px; }
+.preis div { display: grid; grid-template-columns: 5.4em 1fr; gap: 8px; align-items: baseline; }
+.preis dd { margin: 0; font-variant-numeric: tabular-nums; }
+.preis .w { display: block; }
+.g { color: var(--blaugrau); font-size: 12.5px; }
+.links { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; font-family: var(--mono); font-size: 12.5px; }
+@media (max-width: 800px) {
+  .dvliste { min-width: 0; }
+  .dvliste thead { display: none; }
+  .dvliste, .dvliste tbody, .dvliste tr, .dvliste th, .dvliste td { display: block; width: 100%; max-width: none; min-width: 0; }
+  .dvliste tr { padding: 2px 0 12px; border-bottom: 1px solid var(--linie); }
+  .dvliste th.gr { width: auto; border: 0; background: var(--navy); margin: 20px 0 6px; padding: 9px 12px; }
+  .dvliste th.gr .gr-name { color: var(--weiss); }
+  .dvliste th.gr .gr-sort { color: var(--himmel); }
+  .dvliste tbody th, .dvliste tbody td { border: 0; padding: 6px 0; }
+  .dvliste td::before { content: attr(data-label); display: block; font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--blaugrau); margin-bottom: 3px; }
+  .dvliste td.li { white-space: normal; }
+  .links { display: flex; flex-wrap: wrap; gap: 4px 16px; }
+}
+
+/* Detailansicht: Gruppen und mehrere Werte je Zelle */
+.details { min-width: 2700px; }
+.details td.breit { min-width: 290px; }
+.details .w { display: block; }
+.details .w + .w { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--linie); }
+.details tr.gr-zeile th { position: static; background: var(--eisblau); box-shadow: none; padding: 9px 12px; border-bottom: 1px solid var(--navy); }
+.gr-innen { position: sticky; left: 12px; display: inline-flex; align-items: baseline; gap: 14px; }
+.gr-innen .gr-name, .gr-innen .gr-sort { display: inline; margin: 0; }
+
+/* Beleg: Quelle beim Überfahren oder Antippen */
+.beleg { cursor: help; text-decoration: underline dotted var(--himmel); text-decoration-thickness: 1.5px; text-underline-offset: 0.25em; border-radius: 2px; }
+.beleg.sekundaer { text-decoration-style: dashed; text-decoration-color: var(--graphit); }
+.beleg:hover, .beleg:focus-visible, .beleg[aria-expanded="true"] { background: var(--eisblau); }
+.tipp { position: absolute; z-index: 20; width: min(360px, calc(100vw - 32px)); background: var(--weiss); color: var(--tinte); border: 1px solid var(--linie); border-top: 3px solid var(--navy); border-radius: 4px; box-shadow: 0 10px 28px rgba(16, 42, 76, 0.16); padding: 12px 14px 13px; font-size: 13.5px; line-height: 1.45; text-align: left; white-space: normal; font-weight: 400; }
+.tipp.sekundaer { border-top-color: var(--graphit); }
+.tipp .art { display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--blaugrau); }
+.tipp .titel { display: block; font-weight: 600; color: var(--navy); margin: 3px 0 2px; }
+.tipp .titel a { color: var(--navy); }
+.tipp .daten { display: block; color: var(--blaugrau); }
+.tipp blockquote { margin: 8px 0 0; padding: 2px 0 2px 10px; border-left: 2px solid var(--himmel); color: var(--tinte); font-size: 13.5px; }
+.tipp .zusatz { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--linie); color: var(--blaugrau); }
+.legende-beleg { font-size: var(--fs-meta); color: var(--blaugrau); }
+@media print { .tipp { display: none !important; } .beleg { text-decoration: none; } }
+
 @media print {
   .kopf, .ansicht, .fuss nav, .menue { display: none; }
   .auftakt { background: none; }

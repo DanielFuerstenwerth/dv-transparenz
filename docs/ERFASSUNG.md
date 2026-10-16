@@ -67,17 +67,25 @@ where an.slug = 'spotmyenergy-smartflux' and a.merkmal_key = 'entgelt_grund';
 
 Bewusste Bereinigung von Fehleingaben (nur Daniel): `set local dv.wartung = 'an';` in derselben Transaktion. Jede Änderung landet zusätzlich in `intern.aenderungslog`.
 
-## Zugang (Reihenfolge der Übersicht)
+## Gruppen der Übersicht (seit 16.10.2026)
 
-Die Übersicht ordnet Angebote für Endkunden danach, wie offen sie für alle Anlagenbetreiber sind. Der Zugang wird automatisch aus vier Merkmalen abgeleitet; diese haben bei der Erfassung Vorrang:
+Die Übersicht gliedert Angebote für Endkunden nach dem Merkmal `kopplung` („Gekoppelt an“, Mehrfachauswahl). Die konkreten Produkte stehen in `bedingung` und erscheinen in der Liste als „nur mit …“.
 
-| Merkmal | Bindung, wenn |
-|---|---|
-| `anlage_vom_anbieter` | `ja` → „Nur mit Anlage des Anbieters“ |
-| `stromliefervertrag` | `erforderlich` → „Nur mit Stromvertrag“ |
-| `zusatzhardware`, `speicher` | `erforderlich` → „Nur mit Hardware“ |
+| Werte in `kopplung` | Gruppe | Reihenfolge in der Gruppe |
+|---|---|---|
+| `keine` | Ohne weitere Produkte | nach `erstmals_veroeffentlicht` |
+| `stromtarif`, `messstellenbetrieb` oder `technik` | Gekoppelt an Stromtarif oder Technik | alphabetisch nach Anbieter |
+| enthält `hardware_anbieter` | Gekoppelt an Hardware des Anbieters | alphabetisch nach Anbieter |
+| fehlt | Kopplung noch nicht erfasst | alphabetisch |
 
-„Offen für alle“ verlangt belegte Angaben zu `stromliefervertrag`, `zusatzhardware` und `anlage_vom_anbieter` ohne Bindung. Fehlt eine Angabe, steht das Angebot unter „Keine Bindung bekannt“; ist eine Angabe `unklar`, unter „Noch unklar“ (am Ende). Das intelligente Messsystem zählt nicht als Bindung.
+- `technik`: bestimmte Technik wie Speicher oder Energiemanager, die auch von Dritten stammen kann, sofern kompatibel.
+- `hardware_anbieter`: Anlage, Speicher oder Energiemanager des Anbieters oder seiner Partner.
+- Ein intelligentes Messsystem eines beliebigen Messstellenbetreibers zählt nicht als Kopplung; `messstellenbetrieb` nur, wenn der Messstellenbetrieb über den Anbieter laufen muss.
+- Ist die Kopplung nicht eindeutig belegt, `status = 'unklar'` mit den wahrscheinlichen Werten in `wert_auswahl` und Begründung in `anmerkung`; die Liste markiert das mit „unklar“.
+- `status_kurz`: Status und Start in einer Zeile für die Liste, aus derselben Quelle. Fehlt er, zeigt die Liste die Bezeichnung des Status.
+- `erstmals_veroeffentlicht`: Datum der ersten auffindbaren Ankündigung oder Veröffentlichung, mit Quelle.
+
+Die Merkmale `stromliefervertrag`, `zusatzhardware`, `speicher` und `anlage_vom_anbieter` werden weiter erfasst und stehen in der Detailansicht; sie bestimmen die Gruppe nicht mehr.
 
 ## Rechnerabfragen
 

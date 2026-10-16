@@ -19,6 +19,13 @@
     "verantwortlich": "Daniel Fürstenwerth"
   },
   "methodikVersionen": [
-    { "datum": "2026-10-16", "text": "Erste Fassung." }
+    {
+      "datum": "2026-10-16",
+      "text": "Erste Fassung."
+    },
+    {
+      "datum": "2026-10-16",
+      "text": "Übersicht als Liste in drei Gruppen nach Kopplung an weitere Produkte; neue Merkmale „Gekoppelt an“, „Status kurz“ und „Erstmals veröffentlicht“; Hinweis auf KI-gestützte Recherche."
+    }
   ]
 }
