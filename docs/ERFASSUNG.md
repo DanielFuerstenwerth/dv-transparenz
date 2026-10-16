@@ -87,6 +87,10 @@ Die Übersicht gliedert Angebote für Endkunden nach dem Merkmal `kopplung` („
 
 Die Merkmale `stromliefervertrag`, `zusatzhardware`, `speicher` und `anlage_vom_anbieter` werden weiter erfasst und stehen in der Detailansicht; sie bestimmen die Gruppe nicht mehr.
 
+## Preisgestaltung (seit 16.10.2026)
+
+`preisgestaltung` fasst in einem Satz zusammen, was Kundinnen und Kunden dem Anbieter zahlen (Entgelte, Abzüge, Erlösanteile, gebundene Tarife oder Hardware), Teile mit Semikolon getrennt, analog zu `verguetungsmodell`. Grundlage sind ausschließlich Veröffentlichungen des Anbieters (Website, Preisblatt, AGB, Rechner, Pressemitteilung, wörtliche Zitate aus Interviews), jeweils verlinkt. Gibt es nur Berichte der Fachpresse, wird die Angabe mit `quelle.typ = 'medienbericht'` erfasst; die Website zeigt sie dezent mit „laut Fachpresse“. Steuer (brutto, netto, unklar) in `steuer`.
+
 ## Rechnerabfragen
 
 - Nur die Referenzfälle aus `referenzfall` verwenden; Ausrichtung und Messsystem nicht variieren.

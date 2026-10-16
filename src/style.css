@@ -310,20 +310,25 @@ blockquote { margin: 6px 0 0; padding: 2px 0 2px 12px; border-left: 2px solid va
 :root { --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; }
 .ki-hinweis { font-size: 13px; line-height: 1.45; color: var(--tinte); background: var(--solargelb-flaeche); border-left: 3px solid var(--solargelb); padding: 6px 12px; margin: 6px 0 16px; width: fit-content; max-width: 100%; }
 .ki-hinweis a { color: var(--navy); }
-.dvliste { font-size: 14px; min-width: 1100px; }
+.rahmen-liste { max-width: 1520px; }
+.dvliste { font-size: 14px; min-width: 1180px; }
 .dvliste thead th { font-family: var(--mono); font-size: 11.5px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; padding: 9px 12px; }
 .dvliste tbody tr:nth-child(even) { background: none; }
 .dvliste tbody th, .dvliste tbody td { padding: 12px; line-height: 1.45; }
-.dvliste th.gr { width: 165px; background: var(--wolkengrau); border-right: 1px solid var(--linie); border-bottom: 1px solid var(--navy); }
+.dvliste th.gr { width: 150px; background: var(--wolkengrau); border-right: 1px solid var(--linie); border-bottom: 1px solid var(--navy); }
 .gr-name { display: block; color: var(--navy); font-weight: 600; font-size: 14.5px; line-height: 1.3; }
 .gr-sort { display: block; margin-top: 5px; font-family: var(--mono); font-size: 11.5px; line-height: 1.35; color: var(--blaugrau); }
 .gr-sort::before { content: "↓ "; }
 .dvliste th.an { min-width: 160px; }
 .dvliste th.an a { font-weight: 600; color: var(--navy); text-decoration: none; }
 .dvliste th.an a:hover { text-decoration: underline; }
-.dvliste td.st { min-width: 180px; max-width: 250px; }
-.dvliste td.ei { min-width: 230px; }
-.dvliste td.pr { min-width: 260px; }
+.dvliste td.st { min-width: 160px; max-width: 220px; }
+.dvliste td.ei { min-width: 200px; }
+.dvliste td.vg { min-width: 200px; }
+.dvliste td.pr { min-width: 240px; }
+.indirekt { color: var(--blaugrau); font-size: 0.93em; }
+.indirekt .beleg { color: var(--blaugrau); }
+.indirekt-marke { display: inline-block; font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--graphit); border: 1px dashed var(--graphit); border-radius: 2px; padding: 0 4px; margin-right: 6px; vertical-align: 0.08em; }
 .dvliste td.li { white-space: nowrap; }
 .punkt { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 7px; vertical-align: 0.04em; box-sizing: border-box; }
 .punkt.st-verfuegbar { background: var(--kobalt); }

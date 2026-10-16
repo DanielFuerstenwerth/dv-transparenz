@@ -473,8 +473,6 @@ function einschraenkungen(a) {
   const lmax = angabenVon(a, 'leistung_max_kwp').filter(veroeff);
   const lt = leistungText(a);
   if (/kWp/.test(lt)) teile.push(`<span class="k">Leistung</span> ${beleg([...lmax, ...lmin], esc(lt))}`);
-  const z = angabenVon(a, 'zugelassene_anlagen').find(veroeff);
-  if (z && z.wert_auswahl?.[0] && z.wert_auswahl[0] !== 'neu_und_bestand') teile.push(`<span class="k">Anlagen</span> ${beleg([z], esc(optionLabel(merkmale.zugelassene_anlagen, z.wert_auswahl[0])))}`);
   const wb = angabenVon(a, 'weitere_bedingungen').find(veroeff);
   if (wb) { const s = ersterSatz(wb.wert_text); if (s.length <= 95) teile.push(`<span class="k">sonst</span> ${beleg([wb], esc(s))}`); }
   return teile.length ? `<ul class="zeilen">${teile.map((t) => `<li>${t}</li>`).join('')}</ul>` : '<span class="leer">keine genannt</span>';
@@ -491,7 +489,8 @@ function alleWerte(a, key, { kurz = false } = {}) {
     const geltungHtml = g && !kurz ? `<span class="geltung">${esc(g)}</span>` : (g && (x.kwp_von != null || x.kwp_bis != null) ? ` <span class="g">(${esc(geltung({ kwp_von: x.kwp_von, kwp_bis: x.kwp_bis }))})</span>` : '');
     const hatWert = x.status === 'unklar' && rohwert(x, m) != null && !(Array.isArray(rohwert(x, m)) && !rohwert(x, m).length);
     const text = hatWert ? wertText({ ...x, status: 'veroeffentlicht' }, m) + ' (unklar)' : wertText(x, m);
-    return `<span class="w">${beleg([x], esc(text), veroeff(x) ? '' : 'leer')}${geltungHtml}${mitteilung}</span>`;
+    const marke = PREISMERKMALE.has(key) && indirekt(x) && !kurz ? INDIREKT_MARKE : '';
+    return `<span class="w${marke ? ' indirekt' : ''}">${marke}${beleg([x], esc(text), veroeff(x) ? '' : 'leer')}${geltungHtml}${mitteilung}</span>`;
   }).join('');
 }
 
@@ -504,6 +503,22 @@ const PREIS_KURZ = [
   ['entgelt_einmalig', 'Einmalig']
 ];
 const FORM_KURZ = { marktpraemie: 'Marktprämie, § 20 EEG', sonstige: 'sonstige DV, § 21a EEG' };
+
+// Preisbezogene Merkmale: Angaben nur aus der Fachpresse dezent und gekennzeichnet
+const PREISMERKMALE = new Set(['verguetungsmodell', 'preisgestaltung', 'preisbasis', 'entgelt_grund', 'entgelt_menge', 'entgelt_anteil', 'entgelt_einmalig', 'entgelt_sonstiges']);
+const indirekt = (x) => SEKUNDAER.has(x?.quelle_typ);
+const INDIREKT_MARKE = '<span class="indirekt-marke">laut Fachpresse</span>';
+
+function textZelle(a, key, { nurErsterSatz = false } = {}) {
+  const x = einfach(a, key).angabe;
+  if (!x) return '<span class="leer">–</span>';
+  if (!veroeff(x)) return beleg([x], esc(wertText(x, merkmale[key])), 'leer');
+  let text = String(x.wert_text);
+  if (nurErsterSatz) { const m = text.match(/^([\s\S]+?[.!?])(?=\s+[A-ZÄÖÜ„]|$)/); if (m) text = m[1]; }
+  return indirekt(x)
+    ? `<span class="indirekt">${INDIREKT_MARKE}${beleg([x], esc(text))}</span>`
+    : beleg([x], esc(text));
+}
 
 function preisZelle(a, L) {
   const zeilen = [];
@@ -576,7 +591,8 @@ function startseite() {
   <th scope="row" class="an"><a href="${L('angebote/' + a.slug)}">${esc(a.name)}</a><span class="unter">${esc(a.organisation?.name || '')}</span>${a.oeffentlich ? '' : '<span class="entwurf-marke">Entwurf</span>'}</th>
   <td data-label="Status" class="st">${statusZeile(a)}</td>
   <td data-label="Einschränkungen" class="ei">${einschraenkungen(a)}</td>
-  <td data-label="Preiskomponenten" class="pr">${preisZelle(a, L)}</td>
+  <td data-label="Vergütungsmodell" class="vg">${textZelle(a, 'verguetungsmodell', { nurErsterSatz: true })}</td>
+  <td data-label="Preisgestaltung" class="pr">${textZelle(a, 'preisgestaltung')}</td>
   <td data-label="Links" class="li">${linkZelle(a, L)}</td>
 </tr>`).join('\n')).join('\n');
 
@@ -615,9 +631,9 @@ function startseite() {
     <div class="tabelle-rahmen">
       <table class="dvliste">
         <caption class="sr">Angebote für Endkunden nach Kopplung</caption>
-        <thead><tr><th scope="col">Kategorie</th><th scope="col">Angebot</th><th scope="col">Status</th><th scope="col">Einschränkungen</th><th scope="col">Preiskomponenten</th><th scope="col">Links</th></tr></thead>
+        <thead><tr><th scope="col">Kategorie</th><th scope="col">Angebot</th><th scope="col">Status</th><th scope="col">Einschränkungen</th><th scope="col">Vergütungsmodell</th><th scope="col">Preisgestaltung</th><th scope="col">Links</th></tr></thead>
         <tbody>
-${endkunden.length ? zeilen : '<tr><td colspan="6">Die ersten Einträge werden geprüft.</td></tr>'}
+${endkunden.length ? zeilen : '<tr><td colspan="7">Die ersten Einträge werden geprüft.</td></tr>'}
         </tbody>
       </table>
     </div>
@@ -644,7 +660,7 @@ ${dl || '<p>Die ersten Einträge werden geprüft.</p>'}
 
   return seite({
     tiefe, titel: null, kanonisch: '', aktiv: 'start', inhalt,
-    beschreibung: 'Wer bietet Direktvermarktung für Strom aus kleinen PV-Anlagen an? Angebote bis 100 kWp mit Status, Einschränkungen und Preiskomponenten, jede Angabe mit Quelle.'
+    beschreibung: 'Wer bietet Direktvermarktung für Strom aus kleinen PV-Anlagen an? Angebote bis 100 kWp mit Status, Einschränkungen, Vergütungsmodell und Preisgestaltung, jede Angabe mit Quelle.'
   });
 }
 
@@ -656,6 +672,7 @@ const DETAIL_SPALTEN = [
   { key: 'zugelassene_anlagen', label: 'Neu- oder Bestandsanlagen' },
   { key: 'vermarktungsform', label: 'Form der Direktvermarktung' },
   { key: 'verguetungsmodell', label: 'Vergütungsmodell', breit: true },
+  { key: 'preisgestaltung', label: 'Preisgestaltung', breit: true },
   { key: 'preisbasis', label: 'Preisbasis' },
   { key: 'entgelt_grund', label: 'Grundgebühr' },
   { key: 'entgelt_menge', label: 'Mengenentgelt' },
@@ -911,7 +928,7 @@ function methodikseite() {
 <p>Die Übersicht gliedert die Angebote für Endkunden danach, ob die Direktvermarktung an weitere Produkte gekoppelt ist (Merkmal „Gekoppelt an“). Ein intelligentes Messsystem ist für die Direktvermarktung fast immer erforderlich und zählt nicht als Kopplung, solange es von einem beliebigen Messstellenbetreiber stammen kann. Ist ein Angebot an Hardware des Anbieters gekoppelt, steht es in der dritten Gruppe, auch wenn zusätzlich ein Stromtarif erforderlich ist.</p>
 <dl class="glossar">${Object.entries(GRUPPE).filter(([k]) => k !== 'unklar').map(([, g]) => `<div><dt>${esc(g.label)} <span class="meta">${esc(g.sortierung)}</span></dt><dd>${esc(g.text)}</dd></div>`).join('')}</dl>
 <p>In der Gruppe „Ohne weitere Produkte“ stehen die Angebote in der Reihenfolge ihrer ersten auffindbaren Veröffentlichung, in den übrigen Gruppen alphabetisch nach Anbieter. Die Reihenfolge ist keine Bewertung.</p>
-<p>Je Angebot zeigt die Übersicht den Status, die Einschränkungen (Kopplung, Leistungsgrenzen, nur Neu- oder nur Bestandsanlagen, weitere Bedingungen) und die Preiskomponenten. Alle erfassten Preisangaben stehen in der <a href="${L('detailansicht')}">Detailansicht</a>, Wortlaut, Quellen und frühere Stände auf den Seiten der Angebote.</p>
+<p>Je Angebot zeigt die Übersicht den Status, die Einschränkungen (Kopplung, Leistungsgrenzen, weitere Bedingungen), das Vergütungsmodell und die Preisgestaltung. Die Preisgestaltung fasst zusammen, was Kundinnen und Kunden dem Anbieter zahlen; sie beruht ausschließlich auf Veröffentlichungen der Anbieter. Liegen zu Preisen nur Berichte der Fachpresse vor, steht die Angabe dezenter und mit dem Hinweis „laut Fachpresse“. Alle erfassten Angaben einschließlich Neu- oder Bestandsanlagen und Form der Direktvermarktung stehen in der <a href="${L('detailansicht')}">Detailansicht</a>, Wortlaut, Quellen und frühere Stände auf den Seiten der Angebote.</p>
 <p>Das Portal spricht keine Empfehlungen aus und vergibt keine Rangplätze oder Auszeichnungen, auch nicht gegen Entgelt. Anbieter haben keinen Einfluss auf den Inhalt der Angaben.</p>
 </section>
 <section>
