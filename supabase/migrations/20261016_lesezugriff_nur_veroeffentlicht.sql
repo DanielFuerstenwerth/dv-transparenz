@@ -1,6 +1,6 @@
--- Noch nicht angewendet (Stand 16.10.2026).
--- Zweck: Organisationen und Quellen von Entwürfen sind über die öffentliche API nicht mehr lesbar.
--- Anwenden mit apply_migration, Name: lesezugriff_nur_veroeffentlicht
+-- Angewendet am 16.10.2026 als Migration lesezugriff_nur_veroeffentlicht.
+-- Abweichend von diesem Entwurf mit "alter policy" statt "drop/create policy" und ohne die revoke-Zeile
+-- (anon und authenticated hatten im Schema intern keine Tabellenrechte).
 
 create or replace function intern.angebot_oeffentlich(p_angebot uuid) returns boolean
 language sql stable security definer set search_path = '' as $$
