@@ -1,0 +1,5 @@
+dist/
+preview/
+node_modules/
+*.local.json
+.DS_Store

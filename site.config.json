@@ -1,0 +1,24 @@
+{
+  "siteUrl": "https://dv-transparenz.de",
+  "portalName": "Transparenzportal Direktvermarktung",
+  "supabaseUrl": "https://cfpxazyhhgtfttztcwmx.supabase.co",
+  "supabasePublishableKey": "sb_publishable_A_K2f32sUrwFHsBOUTU2cQ__zgugvdO",
+  "kontaktEmail": "kontakt@1000gw.de",
+  "hinweisEmail": "dv@1000gw.de",
+  "umami": {
+    "websiteId": null,
+    "scriptUrl": "https://cloud.umami.is/script.js"
+  },
+  "betreiber": {
+    "name": "1000 GW GmbH",
+    "strasse": "Rollbergstraße 28A",
+    "ort": "12053 Berlin",
+    "register": "Amtsgericht Berlin (Charlottenburg) HRB 273150 B",
+    "ustId": "DE453210004",
+    "vertreten": "Daniel Fürstenwerth, Geschäftsführer",
+    "verantwortlich": "Daniel Fürstenwerth"
+  },
+  "methodikVersionen": [
+    { "datum": "2026-10-16", "text": "Erste Fassung." }
+  ]
+}
