@@ -212,15 +212,6 @@ tr[hidden] { display: none; }
   .uebersicht, .uebersicht tbody, .uebersicht tr, .uebersicht th, .uebersicht td { display: block; width: 100%; }
   .uebersicht tr { border: 1px solid var(--linie); border-radius: 6px; margin-bottom: 14px; padding: 6px 14px 10px; background: var(--weiss) !important; }
   .uebersicht tr.entwurf { box-shadow: inset 3px 0 0 var(--solargelb); }
-.uebersicht { table-layout: fixed; min-width: 1060px; }
-.uebersicht col.sp-angebot { width: 17%; }
-.uebersicht col.sp-status { width: 15%; }
-.uebersicht col.sp-groesse { width: 9%; }
-.uebersicht col.sp-voraus { width: 28%; }
-.uebersicht col.sp-kosten { width: 22%; }
-.uebersicht col.sp-stand { width: 9%; }
-.uebersicht .chip { white-space: normal; }
-.kv-kosten { grid-template-columns: 7.8em 1fr; }
   .uebersicht tbody th, .uebersicht tbody td { border: 0; padding: 8px 0; }
   .uebersicht tbody td::before { content: attr(data-label); display: block; font-size: 12px; color: var(--blaugrau); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 3px; }
   .uebersicht tbody th { font-size: 17px; border-bottom: 1px solid var(--linie); padding-bottom: 10px; }
