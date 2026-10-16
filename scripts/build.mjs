@@ -490,7 +490,6 @@ function startseite() {
       <div><dt>Angebote für Endkunden</dt><dd>${endkunden.length}</dd></div>
       <div><dt>davon buchbar</dt><dd>${buchbar}</dd></div>
       <div><dt>davon angekündigt</dt><dd>${angekuendigt}</dd></div>
-      <div><dt>Angebote für Unternehmen</dt><dd>${dienstleister.length}</dd></div>
     </dl>
   </div>
 </section>
@@ -560,7 +559,8 @@ function detailWert(a, sp) {
   if (!angabenVon(a, sp.key).length) return '<span class="leer">–</span>';
   let text = e.text;
   if (sp.abbild && Array.isArray(e.wert)) text = sp.abbild[e.wert[0]] || text;
-  return `<span class="${e.leer ? 'leer' : ''}">${esc(text)}</span>`;
+  const mitteilung = e.angabe?.quelle_typ === 'anbieterauskunft' ? '<span class="mitteilung">Mitteilung des Anbieters</span>' : '';
+  return `<span class="${e.leer ? 'leer' : ''}">${esc(text)}</span>${mitteilung}`;
 }
 
 function detailseite() {
@@ -636,7 +636,8 @@ function angebotsseite(a) {
         const g2 = geltung(x);
         const wort = x.originalwortlaut ? `<blockquote>${esc(x.originalwortlaut)}</blockquote>` : '';
         const gueltig = x.gueltig_ab ? `<span class="meta">Gültig ab ${datum(x.gueltig_ab)}</span>` : '';
-        return `<div class="wert"><span class="${x.status === 'veroeffentlicht' ? '' : 'leer'}">${esc(wertText(x, m))}</span>${g2 ? `<span class="geltung">${esc(g2)}</span>` : ''}${wort}${gueltig}${x.anmerkung ? `<span class="meta">${esc(x.anmerkung)}</span>` : ''}</div>`;
+        const mitteilung = x.quelle_typ === 'anbieterauskunft' ? '<span class="mitteilung">Mitteilung des Anbieters</span>' : '';
+        return `<div class="wert"><span class="${x.status === 'veroeffentlicht' ? '' : 'leer'}">${esc(wertText(x, m))}</span>${g2 ? `<span class="geltung">${esc(g2)}</span>` : ''}${mitteilung}${wort}${gueltig}${x.anmerkung ? `<span class="meta">${esc(x.anmerkung)}</span>` : ''}</div>`;
       }).join('');
       const qs = [...new Set(liste.map((x) => x.quelle_id))].map((id) => quelleVerweis(id, nummern)).join(' ');
       return `<tr><th scope="row"><span class="merkmal" title="${esc(m?.definition || '')}">${esc(m?.bezeichnung || key)}</span></th><td>${werte}</td><td class="quelle-spalte">${qs}</td></tr>`;
@@ -680,7 +681,7 @@ ${bez.map((b) => {
 ${[...nummern.entries()].map(([id, n]) => {
     const q = quellen[id] || {};
     const titel = q.url ? `<a href="${esc(q.url)}" rel="noopener" target="_blank">${esc(q.titel)}</a>` : esc(q.titel || 'Quelle');
-    const teile = [q.herausgeber, q.veroeffentlicht_am ? 'veröffentlicht ' + datum(q.veroeffentlicht_am) : '', q.abgerufen_am ? 'abgerufen ' + datum(q.abgerufen_am) : ''].filter(Boolean).join(' · ');
+    const teile = [q.typ === 'anbieterauskunft' ? 'Mitteilung des Anbieters an das Portal' : '', q.herausgeber, q.veroeffentlicht_am ? 'veröffentlicht ' + datum(q.veroeffentlicht_am) : '', q.abgerufen_am ? 'abgerufen ' + datum(q.abgerufen_am) : ''].filter(Boolean).join(' · ');
     const archiv = q.archiv_url ? ` · <a href="${esc(q.archiv_url)}" rel="noopener" target="_blank">Archivkopie</a>` : '';
     return `<li id="quelle-${n}" value="${n}">${titel}<span class="meta">${esc(teile)}${archiv}</span></li>`;
   }).join('\n')}</ol></section>` : '';
@@ -790,7 +791,8 @@ function methodikseite() {
 </section>
 <section>
 <h2>Angaben und Quellen</h2>
-<p>Jede Angabe ist mit Quelle und Abrufdatum belegt und möglichst nah am Wortlaut der Quelle formuliert. Was der Anbieter nicht veröffentlicht, ist als „nicht veröffentlicht“ gekennzeichnet. Eigene Schätzungen fließen nicht ein.</p>
+<p>Grundlage sind ausschließlich veröffentlichte Informationen: Websites, Preisblätter und Geschäftsbedingungen der Anbieter, Pressemitteilungen und Fachpresse. Jede Angabe nennt Quelle und Abrufdatum und folgt möglichst dem Wortlaut der Quelle. Eigene Schätzungen fließen nicht ein.</p>
+<p>Korrekturen, die Anbieter mitteilen, werden übernommen und bei der jeweiligen Angabe als Mitteilung des Anbieters gekennzeichnet.</p>
 <p>Gelten Bedingungen nur für bestimmte Anlagengrößen, Netzgebiete oder Voraussetzungen, steht dies bei der jeweiligen Angabe.</p>
 </section>
 <section>
@@ -928,7 +930,7 @@ function impressum() {
 <h2>Verantwortlich für journalistisch-redaktionelle Inhalte gemäß § 18 Abs. 2 MStV</h2>
 <p>${esc(b.verantwortlich)}<br>${esc(b.strasse)}<br>${esc(b.ort)}</p>
 <h2>Haftung für Inhalte</h2>
-<p>Die Angaben in diesem Portal beruhen auf öffentlich zugänglichen Quellen, die bei jeder Angabe genannt sind. Sie wurden mit Sorgfalt erstellt. Für Richtigkeit, Vollständigkeit und Aktualität wird keine Gewähr übernommen. Maßgeblich sind die Vertragsunterlagen der Anbieter.</p>
+<p>Die Angaben in diesem Portal beruhen auf veröffentlichten Informationen und auf Mitteilungen der Anbieter; die Quelle ist bei jeder Angabe genannt. Sie wurden mit Sorgfalt erstellt. Für Richtigkeit, Vollständigkeit und Aktualität wird keine Gewähr übernommen. Maßgeblich sind die Vertragsunterlagen der Anbieter.</p>
 <h2>Haftung für Links</h2>
 <p>Das Portal verweist auf Websites Dritter, auf deren Inhalte die ${esc(b.name)} keinen Einfluss hat. Für diese Inhalte ist der jeweilige Anbieter verantwortlich.</p>
 </div>`;

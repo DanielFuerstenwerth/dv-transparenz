@@ -135,7 +135,7 @@ td.meta { display: table-cell; }
 .kopfzeile .meta { display: inline; }
 .extern::after { content: " ↗"; }
 
-.kennzahlen { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 40px 0 0; border-top: 1px solid var(--linie); max-width: 960px; }
+.kennzahlen { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 40px 0 0; border-top: 1px solid var(--linie); max-width: 720px; }
 .kennzahlen div { padding: 18px 20px 0 0; }
 .kennzahlen div + div { padding-left: 20px; border-left: 1px solid var(--linie); }
 .kennzahlen dt { font-size: var(--fs-meta); color: var(--blaugrau); order: 2; }
@@ -143,10 +143,9 @@ td.meta { display: table-cell; }
 .kennzahlen div { display: flex; flex-direction: column-reverse; justify-content: flex-end; }
 .kennzahlen .kz-datum { font-size: 26px; padding-top: 12px; }
 @media (max-width: 800px) {
-  .kennzahlen { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .kennzahlen div:nth-child(3) { padding-left: 0; border-left: 0; }
-  .kennzahlen div:nth-child(n+3) { border-top: 1px solid var(--linie); margin-top: 16px; }
-  .kennzahlen dd { font-size: 36px; }
+  .kennzahlen div { padding-right: 10px; }
+  .kennzahlen div + div { padding-left: 10px; }
+  .kennzahlen dd { font-size: 34px; }
 }
 
 /* Abschnitte */
@@ -251,6 +250,7 @@ tr[hidden] { display: none; }
 .angaben tbody tr:first-child th, .angaben tbody tr:first-child td { border-top: 1px solid var(--navy); }
 .merkmal { color: var(--blaugrau); border-bottom: 1px dotted var(--himmel); cursor: help; }
 .wert + .wert { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--linie); }
+.mitteilung { display: block; width: fit-content; font-size: 12px; color: var(--navy); background: var(--eisblau); border-radius: 3px; padding: 1px 6px; margin-top: 4px; }
 .geltung { display: block; font-size: var(--fs-meta); color: var(--tinte); margin-top: 2px; }
 blockquote { margin: 6px 0 0; padding: 2px 0 2px 12px; border-left: 2px solid var(--himmel); color: var(--blaugrau); font-size: var(--fs-meta); font-style: normal; }
 .quelle-spalte { text-align: right; white-space: nowrap; }

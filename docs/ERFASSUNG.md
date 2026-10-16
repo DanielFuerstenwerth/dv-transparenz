@@ -4,7 +4,7 @@ Verbindliche Regeln für alle, die Daten im Transparenzportal Direktvermarktung 
 
 ## Grundsätze
 
-1. **Nur öffentliche Informationen.** Websites, Preisblätter, AGB, Pressemitteilungen, Fachpresse, Registereinträge. Auskünfte von Anbietern nur schriftlich und als Quelle vom Typ `anbieterauskunft`.
+1. **Nur veröffentlichte Informationen.** Websites, Preisblätter, AGB, Pressemitteilungen, Fachpresse, Registereinträge. Einzige Ausnahme: Korrekturen, die ein Anbieter schriftlich mitteilt. Sie werden als Quelle vom Typ `anbieterauskunft` erfasst (mit `ausgeloest_durch = 'hinweis_anbieter'`) und auf der Website automatisch als „Mitteilung des Anbieters“ gekennzeichnet.
 2. **Jede Angabe hat eine Quelle mit Abrufdatum.** Ohne Quelle keine Angabe.
 3. **Nichts erfinden, nichts schätzen.** Was der Anbieter nicht veröffentlicht, wird mit Status `nicht_veroeffentlicht` erfasst. Widersprüchliches oder Unklares mit `unklar` und einer Anmerkung.
 4. **Nah am Wortlaut.** Texte sachlich und knapp; wörtliche Zitate gehören in `originalwortlaut`.
