@@ -58,6 +58,18 @@ const daten = snapshotPfad
   : await ladeAusSupabase();
 for (const k of Object.keys(RESSOURCEN)) daten[k] ||= [];
 
+// Öffentlicher Bau: nur Organisationen und Quellen, die zu veröffentlichten Angeboten gehören
+if (!snapshotPfad || flag('--oeffentlich')) {
+  const angebotIds = new Set(daten.angebot.filter((a) => a.oeffentlich).map((a) => a.id));
+  daten.angebot = daten.angebot.filter((a) => angebotIds.has(a.id));
+  for (const k of ['angabe_aktuell', 'angabe_verlauf', 'aenderungsprotokoll', 'kalkulator']) daten[k] = daten[k].filter((x) => angebotIds.has(x.angebot_id));
+  daten.beziehung = daten.beziehung.filter((b) => (b.subjekt_angebot_id && angebotIds.has(b.subjekt_angebot_id)) || (b.subjekt_organisation_id && daten.angebot.some((a) => a.organisation_id === b.subjekt_organisation_id)));
+  const orgIds = new Set([...daten.angebot.map((a) => a.organisation_id), ...daten.beziehung.map((b) => b.objekt_organisation_id)]);
+  daten.organisation = daten.organisation.filter((o) => orgIds.has(o.id));
+  const quellIds = new Set([...daten.angabe_verlauf, ...daten.angabe_aktuell, ...daten.kalkulator, ...daten.beziehung].map((x) => x.quelle_id));
+  daten.quelle = daten.quelle.filter((q) => quellIds.has(q.id));
+}
+
 const VORSCHAU = daten.angebot.some((a) => !a.oeffentlich);
 
 if (opt('--write-snapshot')) {
