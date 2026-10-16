@@ -67,6 +67,18 @@ where an.slug = 'spotmyenergy-smartflux' and a.merkmal_key = 'entgelt_grund';
 
 Bewusste Bereinigung von Fehleingaben (nur Daniel): `set local dv.wartung = 'an';` in derselben Transaktion. Jede Änderung landet zusätzlich in `intern.aenderungslog`.
 
+## Zugang (Reihenfolge der Übersicht)
+
+Die Übersicht ordnet Angebote für Endkunden danach, wie offen sie für alle Anlagenbetreiber sind. Der Zugang wird automatisch aus vier Merkmalen abgeleitet; diese haben bei der Erfassung Vorrang:
+
+| Merkmal | Bindung, wenn |
+|---|---|
+| `anlage_vom_anbieter` | `ja` → „Nur mit Anlage des Anbieters“ |
+| `stromliefervertrag` | `erforderlich` → „Nur mit Stromvertrag“ |
+| `zusatzhardware`, `speicher` | `erforderlich` → „Nur mit Hardware“ |
+
+„Offen für alle“ verlangt belegte Angaben zu `stromliefervertrag`, `zusatzhardware` und `anlage_vom_anbieter` ohne Bindung. Fehlt eine Angabe, steht das Angebot unter „Keine Bindung bekannt“; ist eine Angabe `unklar`, unter „Noch unklar“ (am Ende). Das intelligente Messsystem zählt nicht als Bindung.
+
 ## Rechnerabfragen
 
 - Nur die Referenzfälle aus `referenzfall` verwenden; Ausrichtung und Messsystem nicht variieren.

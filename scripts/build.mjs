@@ -229,10 +229,51 @@ function einfach(angebot, key) {
   return { text, leer: a.status !== 'veroeffentlicht', wert: a.status === 'veroeffentlicht' ? rohwert(a, m) : null, angabe: a };
 }
 
+// Zugang: wie offen ein Angebot für alle Anlagenbetreiber ist, abgeleitet aus drei Bindungen
+const ZUGANG = {
+  offen: { rang: 1, label: 'Offen für alle', text: 'Weder Stromvertrag noch Hardware noch Anlage des Anbieters erforderlich.' },
+  keine_bekannt: { rang: 2, label: 'Keine Bindung bekannt', text: 'Keine Bindung belegt; mindestens eine der Angaben fehlt noch.' },
+  strom: { rang: 3, label: 'Nur mit Stromvertrag', text: 'Stromliefervertrag beim Anbieter erforderlich.' },
+  hardware: { rang: 4, label: 'Nur mit Hardware', text: 'Batteriespeicher oder zusätzliche Hardware, etwa ein Energiemanager, erforderlich.' },
+  strom_hardware: { rang: 5, label: 'Nur mit Stromvertrag und Hardware', text: 'Stromliefervertrag und Batteriespeicher oder zusätzliche Hardware erforderlich.' },
+  anlage: { rang: 6, label: 'Nur mit Anlage des Anbieters', text: 'Die PV-Anlage muss beim Anbieter oder einem Partner gekauft, gemietet oder installiert sein.' },
+  unklar: { rang: 7, label: 'Noch unklar', text: 'Angaben zu den Bindungen fehlen oder sind nicht eindeutig.' }
+};
+
+function bindungWert(angebot, key) {
+  const liste = angabenVon(angebot, key);
+  if (!liste.length) return 'fehlt';
+  const a = liste.find((x) => x.status === 'veroeffentlicht');
+  return a ? a.wert_auswahl?.[0] : 'unklar';
+}
+
+function zugang(angebot) {
+  const strom = bindungWert(angebot, 'stromliefervertrag');
+  const hw = bindungWert(angebot, 'zusatzhardware');
+  const sp = bindungWert(angebot, 'speicher');
+  const anlage = bindungWert(angebot, 'anlage_vom_anbieter');
+  let key;
+  if (anlage === 'ja') key = 'anlage';
+  else {
+    const s = strom === 'erforderlich';
+    const h = hw === 'erforderlich' || sp === 'erforderlich';
+    if (s && h) key = 'strom_hardware';
+    else if (s) key = 'strom';
+    else if (h) key = 'hardware';
+    else {
+      const werte = [strom, hw, anlage];
+      if (werte.every((v) => v !== 'fehlt' && v !== 'unklar')) key = 'offen';
+      else if (!werte.includes('unklar') && werte.some((v) => v !== 'fehlt')) key = 'keine_bekannt';
+      else key = 'unklar';
+    }
+  }
+  return { key, ...ZUGANG[key] };
+}
+
 const sortierteAngebote = (kat) => angebote
   .filter((a) => a.kategorie_key === kat)
-  .map((a) => ({ ...a, verf: verfuegbarkeit(a), stand: datenstand(a) }))
-  .sort((a, b) => (a.verf.info?.rang ?? 9) - (b.verf.info?.rang ?? 9) || a.name.localeCompare(b.name, 'de'));
+  .map((a) => ({ ...a, verf: verfuegbarkeit(a), zug: zugang(a), stand: datenstand(a) }))
+  .sort((a, b) => (kat === 'endkunden' ? a.zug.rang - b.zug.rang : 0) || (a.verf.info?.rang ?? 9) - (b.verf.info?.rang ?? 9) || a.name.localeCompare(b.name, 'de'));
 
 const endkunden = sortierteAngebote('endkunden');
 const dienstleister = sortierteAngebote('dienstleister');
@@ -253,7 +294,8 @@ function link(tiefe, ziel) {
 }
 
 const NAV = [
-  { ziel: '', label: 'Angebote', key: 'start' },
+  { ziel: '', label: 'Übersicht', key: 'start' },
+  { ziel: 'detailansicht', label: 'Detailansicht', key: 'detail' },
   { ziel: 'aenderungen', label: 'Änderungen', key: 'aenderungen' },
   { ziel: 'daten', label: 'Daten', key: 'daten' },
   { ziel: 'methodik', label: 'Methodik', key: 'methodik' }
@@ -386,35 +428,47 @@ function kostenZelle(angebot) {
   return '<span class="leer">–</span>';
 }
 
-function rohDaten(angebot) {
-  const strom = einfach(angebot, 'stromliefervertrag').wert?.[0] || 'unbekannt';
-  const anlage = einfach(angebot, 'anlage_vom_anbieter').wert?.[0] || 'unbekannt';
-  const min = einfach(angebot, 'leistung_min_kwp').wert;
-  const max = einfach(angebot, 'leistung_max_kwp').wert;
-  return `data-gruppe="${angebot.verf.info?.gruppe || 'sonstige'}" data-strom="${strom}" data-anlage="${anlage}" data-min="${min ?? ''}" data-max="${max ?? ''}"`;
+function startDatum(a) {
+  const st = einfach(a, 'start_angekuendigt');
+  return st.leer ? '' : st.text;
+}
+
+function ansichtWechsel(L, aktiv) {
+  return `<nav class="ansicht" aria-label="Ansicht">
+      <a href="${L('')}"${aktiv === 'start' ? ' aria-current="page"' : ''}>Übersicht</a>
+      <a href="${L('detailansicht')}"${aktiv === 'detail' ? ' aria-current="page"' : ''}>Detailansicht</a>
+    </nav>`;
 }
 
 // ---------------------------------------------------------------------------
-// Startseite
+// Startseite (Übersicht)
 
 function startseite() {
   const tiefe = 0;
   const L = (z) => link(tiefe, z);
   const buchbar = endkunden.filter((a) => a.verf.info?.gruppe === 'buchbar').length;
   const angekuendigt = endkunden.filter((a) => a.verf.info?.gruppe === 'angekuendigt').length;
+  const sonstige = endkunden.filter((a) => !['buchbar', 'angekuendigt'].includes(a.verf.info?.gruppe));
 
-  const zeilen = endkunden.map((a) => {
-    const start = einfach(a, 'start_angekuendigt');
-    const extra = (a.verf.info?.gruppe === 'angekuendigt' && !start.leer) ? `<span class="unter">Start: ${esc(start.text)}</span>` : (a.verf.regional ? '<span class="unter">Je nach Netzgebiet</span>' : '');
-    return `<tr ${rohDaten(a)}${a.oeffentlich ? '' : ' class="entwurf"'}>
-  <th scope="row" data-label="Angebot"><a href="${L('angebote/' + a.slug)}">${esc(a.name)}</a><span class="unter">${esc(a.organisation?.name || '')}</span>${a.oeffentlich ? '' : '<span class="entwurf-marke">Entwurf</span>'}</th>
-  <td data-label="Verfügbarkeit">${statusChip(a.verf, extra)}</td>
-  <td data-label="Anlagengröße" class="zahl">${esc(leistungText(a))}</td>
-  <td data-label="Voraussetzungen">${bindungZellen(a)}</td>
-  <td data-label="Kosten">${kostenZelle(a)}</td>
-  <td data-label="Stand" class="zahl meta">${datum(a.stand)}</td>
+  const eintrag = (a) => {
+    const start = a.verf.info?.gruppe === 'angekuendigt' ? startDatum(a) : '';
+    return `<li${a.oeffentlich ? '' : ' class="entwurf"'}><a href="${L('angebote/' + a.slug)}">${esc(a.name)}</a>${a.oeffentlich ? '' : ' <span class="entwurf-marke">Entwurf</span>'}${start ? `<span class="unter">${esc(start)}</span>` : ''}</li>`;
+  };
+  const zelle = (liste) => liste.length ? `<ul class="namen">${liste.map(eintrag).join('')}</ul>` : '<span class="leer">–</span>';
+
+  const zeilen = Object.entries(ZUGANG)
+    .filter(([key]) => key === 'offen' || endkunden.some((a) => a.zug.key === key))
+    .map(([key, z]) => {
+      const alle = endkunden.filter((a) => a.zug.key === key);
+      const b = alle.filter((a) => a.verf.info?.gruppe === 'buchbar');
+      const k = alle.filter((a) => a.verf.info?.gruppe === 'angekuendigt');
+      const s2 = alle.filter((a) => !['buchbar', 'angekuendigt'].includes(a.verf.info?.gruppe));
+      return `<tr>
+  <th scope="row"><span class="zugang-kopf"><span class="zugang-name">${esc(z.label)}</span><span class="zugang-zahl">${alle.length}</span></span><span class="zugang-text">${esc(z.text)}</span></th>
+  <td data-label="Buchbar">${zelle(b)}</td>
+  <td data-label="Angekündigt">${zelle(k)}</td>${sonstige.length ? `\n  <td data-label="Pausiert oder eingestellt">${zelle(s2)}</td>` : ''}
 </tr>`;
-  }).join('\n');
+    }).join('\n');
 
   const dl = dienstleister.map((a) => {
     const umfang = einfach(a, 'leistungsumfang');
@@ -430,57 +484,41 @@ function startseite() {
   const inhalt = `
 <section class="auftakt">
   <div class="rahmen">
-    <h1>Direktvermarktung für PV-Anlagen bis 100&nbsp;kWp</h1>
-    <p class="lead">Welche Unternehmen den Strom kleiner Anlagen vermarkten, zu welchen Bedingungen und seit wann. Jede Angabe mit Quelle und Datum.</p>
+    <h1>Wer bietet Direktvermarktung für Strom aus kleinen PV&#8209;Anlagen an?</h1>
+    <p class="lead">Welche Angebote sind bereits angekündigt und ab wann?</p>
     <dl class="kennzahlen">
-      <div><dt>Angebote buchbar</dt><dd>${buchbar}</dd></div>
-      <div><dt>Angebote angekündigt</dt><dd>${angekuendigt}</dd></div>
-      <div><dt>Dienstleister</dt><dd>${dienstleister.length}</dd></div>
-      <div><dt>Datenstand</dt><dd class="kz-datum">${datum(STAND)}</dd></div>
+      <div><dt>Angebote für Endkunden</dt><dd>${endkunden.length}</dd></div>
+      <div><dt>davon buchbar</dt><dd>${buchbar}</dd></div>
+      <div><dt>davon angekündigt</dt><dd>${angekuendigt}</dd></div>
+      <div><dt>Angebote für Unternehmen</dt><dd>${dienstleister.length}</dd></div>
     </dl>
   </div>
 </section>
 
-<section class="abschnitt" id="angebote" aria-labelledby="h-angebote">
+<section class="abschnitt" id="endkunden" aria-labelledby="h-endkunden">
   <div class="rahmen">
-    <h2 id="h-angebote">Angebote für Anlagenbetreiber</h2>
-    <p class="einleitung">Direktvermarktung als eigene Leistung oder in Verbindung mit Stromtarif, Hardware oder weiteren Leistungen.</p>
-    <form class="filter" id="filter" aria-label="Angebote filtern">
-      <label class="feld"><span>Anlagengröße</span><span class="eingabe"><input type="number" name="kwp" min="0" max="1000" step="0.1" inputmode="decimal" placeholder="z. B. 10"><span>kWp</span></span></label>
-      <fieldset class="feld">
-        <legend>Verfügbarkeit</legend>
-        <div class="segmente">
-          <label><input type="radio" name="gruppe" value="alle" checked><span>Alle</span></label>
-          <label><input type="radio" name="gruppe" value="buchbar"><span>Buchbar</span></label>
-          <label><input type="radio" name="gruppe" value="angekuendigt"><span>Angekündigt</span></label>
-        </div>
-      </fieldset>
-      <fieldset class="feld">
-        <legend>Ohne Bindung</legend>
-        <label class="haken"><input type="checkbox" name="ohneStrom"><span>Kein Stromvertrag beim Anbieter</span></label>
-        <label class="haken"><input type="checkbox" name="ohneAnlage"><span>Kein Anlagenkauf beim Anbieter</span></label>
-      </fieldset>
-    </form>
-    <p class="treffer" id="treffer" aria-live="polite">${endkunden.length} Angebote</p>
+    <div class="abschnitt-kopf">
+      <h2 id="h-endkunden">Angebote für Endkunden</h2>
+      ${ansichtWechsel(L, 'start')}
+    </div>
+    <p class="einleitung">Geordnet danach, wie offen ein Angebot für alle Anlagenbetreiber ist, auch für Anlagen vom Installateur vor Ort.</p>
     <div class="tabelle-rahmen">
-      <table class="uebersicht" id="uebersicht">
-        <caption class="sr">Angebote zur Direktvermarktung für Anlagenbetreiber</caption>
-        <colgroup><col class="sp-angebot"><col class="sp-status"><col class="sp-groesse"><col class="sp-voraus"><col class="sp-kosten"><col class="sp-stand"></colgroup>
-        <thead><tr><th scope="col">Angebot</th><th scope="col">Verfügbarkeit</th><th scope="col">Anlagengröße</th><th scope="col">Voraussetzungen</th><th scope="col">Kosten</th><th scope="col">Stand</th></tr></thead>
+      <table class="matrix">
+        <caption class="sr">Angebote für Endkunden nach Zugang und Verfügbarkeit</caption>
+        <thead><tr><th scope="col">Zugang</th><th scope="col">Buchbar</th><th scope="col">Angekündigt</th>${sonstige.length ? '<th scope="col">Pausiert oder eingestellt</th>' : ''}</tr></thead>
         <tbody>
-${zeilen || '<tr><td colspan="6">Die ersten Einträge werden geprüft.</td></tr>'}
+${endkunden.length ? zeilen : '<tr><td colspan="3">Die ersten Einträge werden geprüft.</td></tr>'}
         </tbody>
       </table>
     </div>
-    <p class="leer-filter" id="leer-filter" hidden>Kein Angebot erfüllt alle gewählten Kriterien. Angebote ohne Angabe zu einem Kriterium werden nicht ausgeschlossen.</p>
-    <p class="anmerkung">Reihenfolge: Verfügbarkeit, dann alphabetisch. Angebote ohne Angabe zu einem Filterkriterium bleiben sichtbar. Die Übersicht zeigt Bedingungen, keine Erlöse. „–“ bedeutet: noch nicht erfasst. <a href="${L('methodik')}">Zur Methodik</a></p>
+    <p class="anmerkung">Zugang nach den Angaben der Anbieter; ein intelligentes Messsystem ist fast immer erforderlich und wird nicht als Bindung gezählt. Bedingungen und Kosten im Einzelnen in der <a href="${L('detailansicht')}">Detailansicht</a>, Regeln in der <a href="${L('methodik')}">Methodik</a>. Datenstand ${datum(STAND)}.</p>
   </div>
 </section>
 
 <section class="abschnitt abschnitt-flaeche" aria-labelledby="h-dl">
   <div class="rahmen">
-    <h2 id="h-dl">Dienstleister und Plattformen</h2>
-    <p class="einleitung">Unternehmen, die Bilanzierung, Fahrplanmanagement, Abrechnung oder Steuerung für andere Anbieter übernehmen.</p>
+    <h2 id="h-dl">Angebote für Unternehmen</h2>
+    <p class="einleitung">Plattformen und Dienstleistungen für Unternehmen, die selbst Direktvermarktung anbieten wollen.</p>
     <div class="dl-raster">
 ${dl || '<p>Die ersten Einträge werden geprüft.</p>'}
     </div>
@@ -496,8 +534,75 @@ ${dl || '<p>Die ersten Einträge werden geprüft.</p>'}
 
   return seite({
     tiefe, titel: null, kanonisch: '', aktiv: 'start', inhalt,
-    beschreibung: 'Angebote zur Direktvermarktung für PV-Anlagen bis 100 kWp: Verfügbarkeit, Voraussetzungen und Kosten mit Quelle und Datum.'
+    beschreibung: 'Wer bietet Direktvermarktung für Strom aus kleinen PV-Anlagen an? Angebote bis 100 kWp nach Zugang und Verfügbarkeit, mit Quellen.'
   });
+}
+
+// ---------------------------------------------------------------------------
+// Detailansicht
+
+const DETAIL_SPALTEN = [
+  { key: 'stromliefervertrag', label: 'Stromvertrag' },
+  { key: 'zusatzhardware', label: 'Zusatzhardware' },
+  { key: 'speicher', label: 'Speicher' },
+  { key: 'anlage_vom_anbieter', label: 'Anlage vom Anbieter', abbild: { ja: 'Erforderlich', nein: 'Nicht erforderlich' } },
+  { key: 'zugelassene_anlagen', label: 'Neu- oder Bestandsanlagen' },
+  { key: 'preisbasis', label: 'Preisbasis' },
+  { key: 'entgelt_grund', label: 'Grundgebühr' },
+  { key: 'entgelt_menge', label: 'Mengenentgelt' },
+  { key: 'entgelt_anteil', label: 'Erlösanteil' },
+  { key: 'entgelt_einmalig', label: 'Einmalig' },
+  { key: 'mindestlaufzeit', label: 'Mindestlaufzeit' }
+];
+
+function detailWert(a, sp) {
+  const e = einfach(a, sp.key);
+  if (!angabenVon(a, sp.key).length) return '<span class="leer">–</span>';
+  let text = e.text;
+  if (sp.abbild && Array.isArray(e.wert)) text = sp.abbild[e.wert[0]] || text;
+  return `<span class="${e.leer ? 'leer' : ''}">${esc(text)}</span>`;
+}
+
+function detailseite() {
+  const tiefe = 1;
+  const L = (z) => link(tiefe, z);
+  const kopf = ['Angebot', 'Zugang', 'Verfügbarkeit', 'Anlagengröße', ...DETAIL_SPALTEN.map((x) => x.label), 'Stand'];
+  const zeilen = endkunden.map((a) => {
+    const start = a.verf.info?.gruppe === 'angekuendigt' ? startDatum(a) : '';
+    return `<tr${a.oeffentlich ? '' : ' class="entwurf"'}>
+  <th scope="row"><a href="${L('angebote/' + a.slug)}">${esc(a.name)}</a><span class="unter">${esc(a.organisation?.name || '')}</span>${a.oeffentlich ? '' : '<span class="entwurf-marke">Entwurf</span>'}</th>
+  <td>${esc(a.zug.label)}</td>
+  <td>${statusChip(a.verf)}${start ? `<span class="unter">${esc(start)}</span>` : ''}</td>
+  <td class="zahl">${esc(leistungText(a))}</td>
+  ${DETAIL_SPALTEN.map((sp) => `<td>${detailWert(a, sp)}</td>`).join('\n  ')}
+  <td class="zahl meta">${datum(a.stand)}</td>
+</tr>`;
+  }).join('\n');
+
+  const inhalt = `
+<section class="auftakt auftakt-klein">
+  <div class="rahmen">
+    <h1>Detailansicht</h1>
+    <p class="lead">Die erfassten Bedingungen aller Angebote für Endkunden. Quellen und Wortlaut auf den Seiten der einzelnen Angebote.</p>
+  </div>
+</section>
+<div class="rahmen detail">
+  <div class="abschnitt-kopf">
+    <p class="meta">${endkunden.length} Angebote · Reihenfolge wie in der Übersicht · Datenstand ${datum(STAND)}</p>
+    ${ansichtWechsel(L, 'detail')}
+  </div>
+  <div class="tabelle-rahmen tabelle-breit">
+    <table class="details">
+      <caption class="sr">Bedingungen der Angebote für Endkunden</caption>
+      <thead><tr>${kopf.map((k) => `<th scope="col">${esc(k)}</th>`).join('')}</tr></thead>
+      <tbody>
+${zeilen || `<tr><td colspan="${kopf.length}">Die ersten Einträge werden geprüft.</td></tr>`}
+      </tbody>
+    </table>
+  </div>
+  <p class="anmerkung">„–“: noch nicht erfasst. Die Tabelle zeigt Bedingungen, keine Erlöse. Definitionen der Merkmale in der <a href="${L('methodik')}">Methodik</a>.</p>
+</div>`;
+  return seite({ tiefe, titel: 'Detailansicht', kanonisch: 'detailansicht', aktiv: 'detail', inhalt, beschreibung: 'Bedingungen aller Angebote zur Direktvermarktung kleiner PV-Anlagen: Zugang, Verfügbarkeit, Voraussetzungen und Kosten.' });
 }
 
 // ---------------------------------------------------------------------------
@@ -584,11 +689,12 @@ ${[...nummern.entries()].map(([id, n]) => {
   const inhalt = `
 <section class="auftakt auftakt-klein">
   <div class="rahmen">
-    <p class="pfad"><a href="${L('')}${a.kategorie_key === 'dienstleister' ? '' : '#angebote'}">${esc(kat?.bezeichnung || 'Angebote')}</a></p>
+    <p class="pfad"><a href="${L('')}">Übersicht</a> · ${esc(a.kategorie_key === 'dienstleister' ? 'Angebote für Unternehmen' : 'Angebote für Endkunden')}</p>
     <h1>${esc(a.name)}${a.oeffentlich ? '' : ' <span class="entwurf-marke">Entwurf</span>'}</h1>
     <p class="lead">${esc(a.organisation?.name || '')}${a.kurzbeschreibung ? ` · ${esc(a.kurzbeschreibung)}` : ''}</p>
     <div class="kopfzeile">
       ${statusChip(a.verf)}
+      ${a.kategorie_key === 'endkunden' ? `<span class="zugang-marke">${esc(a.zug.label)}</span>` : ''}
       ${a.url ? `<a class="extern" href="${esc(a.url)}" rel="noopener" target="_blank">Website des Anbieters</a>` : ''}
       <span class="meta">Datenstand ${datum(a.stand) || '–'}</span>
     </div>
@@ -676,7 +782,7 @@ function methodikseite() {
 <section>
 <h2>Gegenstand</h2>
 <p>Das Portal erfasst Angebote, mit denen Betreiber von PV-Anlagen bis 100&nbsp;kWp installierter Modulleistung ihren Strom direkt vermarkten lassen können. Erfasst werden eigenständige Angebote ebenso wie Angebote in Verbindung mit Stromtarif, Hardware, Gemeinschaftsmodellen oder weiteren Leistungen, gefördert wie ungefördert.</p>
-<p>Getrennt davon stehen Dienstleister und Plattformen, die Prozesse der Direktvermarktung für andere Anbieter übernehmen.</p>
+<p>Getrennt davon stehen Angebote für Unternehmen: Plattformen und Dienstleistungen für Unternehmen, die selbst Direktvermarktung anbieten wollen.</p>
 </section>
 <section>
 <h2>Aufnahme</h2>
@@ -689,7 +795,8 @@ function methodikseite() {
 </section>
 <section>
 <h2>Darstellung und Reihenfolge</h2>
-<p>Die Übersicht ordnet Angebote nach Verfügbarkeit (verfügbar, eingeschränkt verfügbar, Vorregistrierung, angekündigt, pausiert, eingestellt) und innerhalb dessen alphabetisch. Filter wählen Nutzerinnen und Nutzer selbst. Angebote ohne Angabe zu einem Filterkriterium bleiben sichtbar.</p>
+<p>Die Übersicht ordnet die Angebote für Endkunden danach, wie offen sie für alle Anlagenbetreiber sind, und innerhalb dessen nach Verfügbarkeit (verfügbar, eingeschränkt verfügbar, Vorregistrierung, angekündigt, pausiert, eingestellt), dann alphabetisch. Der Zugang ergibt sich aus drei Bindungen: Stromliefervertrag beim Anbieter, Batteriespeicher oder zusätzliche Hardware, Anlage des Anbieters. Ein intelligentes Messsystem ist für die Direktvermarktung fast immer erforderlich und zählt nicht als Bindung.</p>
+<dl class="glossar">${Object.values(ZUGANG).map((z) => `<div><dt>${esc(z.label)}</dt><dd>${esc(z.text)}</dd></div>`).join('')}</dl>
 <p>Das Portal spricht keine Empfehlungen aus und vergibt keine Rangplätze oder Auszeichnungen, auch nicht gegen Entgelt. Anbieter haben keinen Einfluss auf den Inhalt der Angaben.</p>
 </section>
 <section>
@@ -741,7 +848,7 @@ function downloads() {
   const num = (v) => (v === null || v === undefined || v === '' ? null : Number(v));
   const angebotZeilen = [...endkunden, ...dienstleister].map((a) => ({
     angebot: a.slug, name: a.name, organisation: a.organisation?.name, kategorie: a.kategorie_key, url: a.url,
-    verfuegbarkeit: a.verf.key, start_angekuendigt: einfach(a, 'start_angekuendigt').leer ? null : einfach(a, 'start_angekuendigt').text,
+    verfuegbarkeit: a.verf.key, zugang: a.kategorie_key === 'endkunden' ? a.zug.key : null, start_angekuendigt: einfach(a, 'start_angekuendigt').leer ? null : einfach(a, 'start_angekuendigt').text,
     aufgenommen_am: a.aufgenommen_am, datenstand: a.stand
   }));
   const angabeZeilen = daten.angabe_verlauf.map((x) => ({
@@ -761,7 +868,7 @@ function downloads() {
   const merkmalZeilen = daten.merkmal.map((m) => ({ merkmal: m.key, bezeichnung: m.bezeichnung, gruppe: m.gruppe, datentyp: m.datentyp, einheit: m.einheit, definition: m.definition, auspraegungen: m.optionen ? m.optionen.map((o) => o.key).join('|') : null }));
 
   return {
-    'angebote.csv': csv(angebotZeilen, ['angebot', 'name', 'organisation', 'kategorie', 'url', 'verfuegbarkeit', 'start_angekuendigt', 'aufgenommen_am', 'datenstand']),
+    'angebote.csv': csv(angebotZeilen, ['angebot', 'name', 'organisation', 'kategorie', 'url', 'verfuegbarkeit', 'zugang', 'start_angekuendigt', 'aufgenommen_am', 'datenstand']),
     'angaben.csv': csv(angabeZeilen, ['id', 'angebot', 'merkmal', 'status', 'wert', 'einheit', 'steuer', 'kwp_von', 'kwp_bis', 'netzgebiet', 'bedingung', 'gueltig_ab', 'gueltig_bis', 'aktuell', 'erfasst_am', 'quelle_id']),
     'aenderungen.csv': csv(protokollZeilen, ['id', 'erfasst_am', 'angebot', 'merkmal', 'aenderungsart', 'anlass', 'vorher', 'nachher', 'gueltig_ab', 'quelle_url']),
     'quellen.csv': csv(quellZeilen, ['id', 'typ', 'titel', 'url', 'herausgeber', 'veroeffentlicht_am', 'abgerufen_am', 'archiv_url']),
@@ -870,6 +977,7 @@ await fs.mkdir(OUT, { recursive: true });
 await fs.cp(path.join(ROOT, 'src'), path.join(OUT, 'assets'), { recursive: true });
 
 await schreibe('index.html', startseite());
+await schreibe('detailansicht/index.html', detailseite());
 for (const a of [...endkunden, ...dienstleister]) await schreibe(`angebote/${a.slug}/index.html`, angebotsseite(a));
 await schreibe('aenderungen/index.html', aenderungsseite());
 await schreibe('methodik/index.html', methodikseite());
@@ -883,7 +991,7 @@ await schreibe('404.html', fehlerseite());
 const host = new URL(cfg.siteUrl).host;
 await schreibe('CNAME', host + '\n');
 await schreibe('robots.txt', VORSCHAU ? 'User-agent: *\nDisallow: /\n' : `User-agent: *\nAllow: /\nSitemap: ${cfg.siteUrl}/sitemap.xml\n`);
-const urls = ['', 'aenderungen/', 'daten/', 'methodik/', 'impressum/', 'datenschutz/', ...[...endkunden, ...dienstleister].map((a) => `angebote/${a.slug}/`)];
+const urls = ['', 'detailansicht/', 'aenderungen/', 'daten/', 'methodik/', 'impressum/', 'datenschutz/', ...[...endkunden, ...dienstleister].map((a) => `angebote/${a.slug}/`)];
 await schreibe('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((u) => `  <url><loc>${cfg.siteUrl}/${u}</loc></url>`).join('\n')}\n</urlset>\n`);
 
 console.log(`Fertig: ${endkunden.length} Angebote, ${dienstleister.length} Dienstleister, Stand ${STAND}${VORSCHAU ? ' (VORSCHAU mit Entwürfen)' : ''} → ${path.relative(ROOT, OUT) || '.'}`);
