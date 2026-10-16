@@ -1,0 +1,1127 @@
+{
+  "kategorie": [
+    {
+      "key": "endkunden",
+      "bezeichnung": "Angebote für Anlagenbetreiber",
+      "beschreibung": "Unternehmen, die den Strom kleiner PV-Anlagen direkt vermarkten und diese Leistung Anlagenbetreibern anbieten, einzeln oder in Verbindung mit Stromtarif, Hardware oder weiteren Leistungen.",
+      "sortierung": 10
+    },
+    {
+      "key": "dienstleister",
+      "bezeichnung": "Dienstleister und Plattformen",
+      "beschreibung": "Unternehmen, die Prozesse der Direktvermarktung für andere Anbieter übernehmen, etwa Bilanzierung, Fahrplanmanagement, Abrechnung oder Steuerung.",
+      "sortierung": 20
+    }
+  ],
+  "merkmal": [
+    {
+      "key": "status",
+      "bezeichnung": "Status",
+      "gruppe": "Verfügbarkeit",
+      "datentyp": "auswahl",
+      "einheit": null,
+      "definition": "Verfügbarkeit laut Anbieter. Angekündigt: öffentlich angekündigt, noch nicht buchbar. Vorregistrierung: Interessenten können sich vormerken lassen. Eingeschränkt verfügbar: buchbar, aber nur für Teilgruppen, Regionen oder als Pilot. Unterscheidet sich die Verfügbarkeit nach Netzgebiet, wird sie je Netzgebiet erfasst.",
+      "optionen": [
+        {
+          "key": "angekuendigt",
+          "bezeichnung": "Angekündigt"
+        },
+        {
+          "key": "vorregistrierung",
+          "bezeichnung": "Vorregistrierung"
+        },
+        {
+          "key": "eingeschraenkt",
+          "bezeichnung": "Eingeschränkt verfügbar"
+        },
+        {
+          "key": "verfuegbar",
+          "bezeichnung": "Verfügbar"
+        },
+        {
+          "key": "pausiert",
+          "bezeichnung": "Pausiert"
+        },
+        {
+          "key": "eingestellt",
+          "bezeichnung": "Eingestellt"
+        }
+      ],
+      "kategorien": [
+        "endkunden",
+        "dienstleister"
+      ],
+      "sortierung": 10,
+      "in_uebersicht": true,
+      "aktiv": true
+    },
+    {
+      "key": "start_angekuendigt",
+      "bezeichnung": "Angekündigter Start",
+      "gruppe": "Verfügbarkeit",
+      "datentyp": "text",
+      "einheit": null,
+      "definition": "Vom Anbieter genannter Starttermin im Wortlaut der Quelle. Ein Datum wird nur erfasst, wenn die Quelle es nennt.",
+      "optionen": null,
+      "kategorien": [
+        "endkunden",
+        "dienstleister"
+      ],
+      "sortierung": 20,
+      "in_uebersicht": true,
+      "aktiv": true
+    },
+    {
+      "key": "verfuegbar_seit",
+      "bezeichnung": "Buchbar seit",
+      "gruppe": "Verfügbarkeit",
+      "datentyp": "datum",
+      "einheit": null,
+      "definition": "Datum, ab dem das Angebot laut Quelle buchbar ist.",
+      "optionen": null,
+      "kategorien": [
+        "endkunden",
+        "dienstleister"
+      ],
+      "sortierung": 25,
+      "in_uebersicht": false,
+      "aktiv": true
+    },
+    {
+      "key": "verfuegbarkeit_regional",
+      "bezeichnung": "Regionale Verfügbarkeit",
+      "gruppe": "Verfügbarkeit",
+      "datentyp": "auswahl",
+      "einheit": null,
+      "definition": "Ob das Angebot bundesweit oder nur in einzelnen Netzgebieten buchbar ist. Netzgebiete werden einzeln erfasst.",
+      "optionen": [
+        {
+          "key": "bundesweit",
+          "bezeichnung": "Bundesweit"
+        },
+        {
+          "key": "ausgewaehlte_netzgebiete",
+          "bezeichnung": "Ausgewählte Netzgebiete"
+        }
+      ],
+      "kategorien": [
+        "endkunden"
+      ],
+      "sortierung": 30,
+      "in_uebersicht": false,
+      "aktiv": true
+    },
+    {
+      "key": "leistung_min_kwp",
+      "bezeichnung": "Mindestleistung",
+      "gruppe": "Anlage",
+      "datentyp": "zahl",
+      "einheit": "kWp",
+      "definition": "Kleinste zugelassene installierte Leistung der Anlage (Modulleistung, DC).",
+      "optionen": null,
+      "kategorien": [
+        "endkunden"
+      ],
+      "sortierung": 40,
+      "in_uebersicht": true,
+      "aktiv": true
+    },
+    {
+      "key": "leistung_max_kwp",
+      "bezeichnung": "Höchstleistung",
+      "gruppe": "Anlage",
+      "datentyp": "zahl",
+      "einheit": "kWp",
+      "definition": "Größte zugelassene installierte Leistung der Anlage (Modulleistung, DC).",
+      "optionen": null,
+      "kategorien": [
+        "endkunden"
+      ],
+      "sortierung": 41,
+      "in_uebersicht": true,
+      "aktiv": true
+    },
+    {
+      "key": "zugelassene_anlagen",
+      "bezeichnung": "Zugelassene Anlagen",
+      "gruppe": "Anlage",
+      "datentyp": "auswahl",
+      "einheit": null,
+      "definition": "Ob das Angebot für neu in Betrieb gehende Anlagen, für Bestandsanlagen oder für beide gilt.",
+      "optionen": [
+        {
+          "key": "neu_und_bestand",
+          "bezeichnung": "Neu- und Bestandsanlagen"
+        },
+        {
+          "key": "nur_neu",
+          "bezeichnung": "Nur Neuanlagen"
+        },
+        {
+          "key": "nur_bestand",
+          "bezeichnung": "Nur Bestandsanlagen"
+        }
+      ],
+      "kategorien": [
+        "endkunden"
+      ],
+      "sortierung": 45,
+      "in_uebersicht": false,
+      "aktiv": true
+    },
+    {
+      "key": "anlage_vom_anbieter",
+      "bezeichnung": "Anlage vom Anbieter erforderlich",
+      "gruppe": "Anlage",
+      "datentyp": "auswahl",
+      "einheit": null,
+      "definition": "Ja, wenn das Angebot nur für Anlagen gilt, die beim Anbieter oder einem seiner Partner gekauft, gemietet oder installiert wurden.",
+      "optionen": [
+        {
+          "key": "ja",
+          "bezeichnung": "Ja"
+        },
+        {
+          "key": "nein",
+          "bezeichnung": "Nein"
+        }
+      ],
+      "kategorien": [
+        "endkunden"
+      ],
+      "sortierung": 46,
+      "in_uebersicht": true,
+      "aktiv": true
+    },
+    {
+      "key": "stromliefervertrag",
+      "bezeichnung": "Stromliefervertrag beim Anbieter",
+      "gruppe": "Voraussetzungen",
+      "datentyp": "auswahl",
+      "einheit": null,
+      "definition": "Ob für die Direktvermarktung ein Strombezugsvertrag beim selben Anbieter abgeschlossen werden muss.",
+      "optionen": [
+        {
+          "key": "erforderlich",
+          "bezeichnung": "Erforderlich"
+        },
+        {
+          "key": "optional",
+          "bezeichnung": "Optional"
+        },
+        {
+          "key": "nicht_erforderlich",
+          "bezeichnung": "Nicht erforderlich"
+        }
+      ],
+      "kategorien": [
+        "endkunden"
+      ],
+      "sortierung": 50,
+      "in_uebersicht": true,
+      "aktiv": true
+    },
+    {
+      "key": "zusatzhardware",
+      "bezeichnung": "Zusätzliche Hardware",
+      "gruppe": "Voraussetzungen",
+      "datentyp": "auswahl",
+      "einheit": null,
+      "definition": "Hardware über Zähler und Wechselrichter hinaus, etwa Steuerbox oder Energiemanager. Die Art der Hardware steht im Text.",
+      "optionen": [
+        {
+          "key": "erforderlich",
+          "bezeichnung": "Erforderlich"
+        },
+        {
+          "key": "optional",
+          "bezeichnung": "Optional"
+        },
+        {
+          "key": "nicht_erforderlich",
+          "bezeichnung": "Nicht erforderlich"
+        }
+      ],
+      "kategorien": [
+        "endkunden"
+      ],
+      "sortierung": 51,
+      "in_uebersicht": true,
+      "aktiv": true
+    },
+    {
+      "key": "speicher",
+      "bezeichnung": "Batteriespeicher",
+      "gruppe": "Voraussetzungen",
+      "datentyp": "auswahl",
+      "einheit": null,
+      "definition": "Ob ein Batteriespeicher Voraussetzung für das Angebot ist.",
+      "optionen": [
+        {
+          "key": "erforderlich",
+          "bezeichnung": "Erforderlich"
+        },
+        {
+          "key": "optional",
+          "bezeichnung": "Optional"
+        },
+        {
+          "key": "nicht_erforderlich",
+          "bezeichnung": "Nicht erforderlich"
+        }
+      ],
+      "kategorien": [
+        "endkunden"
+      ],
+      "sortierung": 52,
+      "in_uebersicht": false,
+      "aktiv": true
+    },
+    {
+      "key": "messsystem",
+      "bezeichnung": "Intelligentes Messsystem",
+      "gruppe": "Voraussetzungen",
+      "datentyp": "auswahl",
+      "einheit": null,
+      "definition": "Anforderungen an das Messsystem und ob der Anbieter den Messstellenbetrieb übernimmt.",
+      "optionen": [
+        {
+          "key": "erforderlich",
+          "bezeichnung": "Erforderlich"
+        },
+        {
+          "key": "vom_anbieter",
+          "bezeichnung": "Wird vom Anbieter gestellt"
+        },
+        {
+          "key": "nicht_erforderlich",
+          "bezeichnung": "Nicht erforderlich"
+        }
+      ],
+      "kategorien": [
+        "endkunden"
+      ],
+      "sortierung": 53,
+      "in_uebersicht": false,
+      "aktiv": true
+    },
+    {
+      "key": "steuerung",
+      "bezeichnung": "Steuerung durch den Anbieter",
+      "gruppe": "Voraussetzungen",
+      "datentyp": "auswahl",
+      "einheit": null,
+      "definition": "Ja, wenn der Anbieter die Einspeisung aktiv steuern oder abregeln kann, etwa bei negativen Preisen.",
+      "optionen": [
+        {
+          "key": "ja",
+          "bezeichnung": "Ja"
+        },
+        {
+          "key": "nein",
+          "bezeichnung": "Nein"
+        }
+      ],
+      "kategorien": [
+        "endkunden"
+      ],
+      "sortierung": 54,
+      "in_uebersicht": false,
+      "aktiv": true
+    },
+    {
+      "key": "weitere_bedingungen",
+      "bezeichnung": "Weitere Bedingungen",
+      "gruppe": "Voraussetzungen",
+      "datentyp": "text",
+      "einheit": null,
+      "definition": "Produkte oder Bedingungen, an die das Angebot zusätzlich gebunden ist.",
+      "optionen": null,
+      "kategorien": [
+        "endkunden"
+      ],
+      "sortierung": 59,
+      "in_uebersicht": false,
+      "aktiv": true
+    },
+    {
+      "key": "vermarktungsform",
+      "bezeichnung": "Form der Direktvermarktung",
+      "gruppe": "Vermarktung",
+      "datentyp": "auswahl",
+      "einheit": null,
+      "definition": "Gesetzliche Form der Direktvermarktung. Wird nur erfasst, wenn die Quelle sie nennt.",
+      "optionen": [
+        {
+          "key": "marktpraemie",
+          "bezeichnung": "Marktprämienmodell (§ 20 EEG)"
+        },
+        {
+          "key": "sonstige",
+          "bezeichnung": "Sonstige Direktvermarktung (§ 21a EEG)"
+        }
+      ],
+      "kategorien": [
+        "endkunden"
+      ],
+      "sortierung": 60,
+      "in_uebersicht": false,
+      "aktiv": true
+    },
+    {
+      "key": "verguetungsmodell",
+      "bezeichnung": "Vergütungsmodell",
+      "gruppe": "Vermarktung",
+      "datentyp": "text",
+      "einheit": null,
+      "definition": "Wie sich die Vergütung für den eingespeisten Strom bemisst, möglichst nah am Wortlaut der Quelle.",
+      "optionen": null,
+      "kategorien": [
+        "endkunden"
+      ],
+      "sortierung": 61,
+      "in_uebersicht": true,
+      "aktiv": true
+    },
+    {
+      "key": "preisbasis",
+      "bezeichnung": "Preisbasis",
+      "gruppe": "Vermarktung",
+      "datentyp": "mehrfachauswahl",
+      "einheit": null,
+      "definition": "Auf welche Preise sich die Vergütung bezieht.",
+      "optionen": [
+        {
+          "key": "monatsmarktwert",
+          "bezeichnung": "Monatsmarktwert"
+        },
+        {
+          "key": "boersenpreis",
+          "bezeichnung": "Börsenpreis (Day-Ahead)"
+        },
+        {
+          "key": "festpreis",
+          "bezeichnung": "Fester Preis"
+        },
+        {
+          "key": "marktpraemie",
+          "bezeichnung": "Marktprämie"
+        },
+        {
+          "key": "bonus",
+          "bezeichnung": "Bonus oder Prämie"
+        },
+        {
+          "key": "sonstige",
+          "bezeichnung": "Sonstige"
+        }
+      ],
+      "kategorien": [
+        "endkunden"
+      ],
+      "sortierung": 62,
+      "in_uebersicht": false,
+      "aktiv": true
+    },
+    {
+      "key": "entgelt_grund",
+      "bezeichnung": "Grundgebühr",
+      "gruppe": "Kosten",
+      "datentyp": "zahl",
+      "einheit": "€/Monat",
+      "definition": "Wiederkehrendes Entgelt unabhängig von der eingespeisten Strommenge.",
+      "optionen": null,
+      "kategorien": [
+        "endkunden"
+      ],
+      "sortierung": 70,
+      "in_uebersicht": true,
+      "aktiv": true
+    },
+    {
+      "key": "entgelt_menge",
+      "bezeichnung": "Mengenabhängiges Entgelt",
+      "gruppe": "Kosten",
+      "datentyp": "zahl",
+      "einheit": "ct/kWh",
+      "definition": "Entgelt je eingespeister Kilowattstunde.",
+      "optionen": null,
+      "kategorien": [
+        "endkunden"
+      ],
+      "sortierung": 71,
+      "in_uebersicht": true,
+      "aktiv": true
+    },
+    {
+      "key": "entgelt_anteil",
+      "bezeichnung": "Erlösanteil des Anbieters",
+      "gruppe": "Kosten",
+      "datentyp": "zahl",
+      "einheit": "%",
+      "definition": "Anteil der Vermarktungserlöse, den der Anbieter einbehält.",
+      "optionen": null,
+      "kategorien": [
+        "endkunden"
+      ],
+      "sortierung": 72,
+      "in_uebersicht": false,
+      "aktiv": true
+    },
+    {
+      "key": "entgelt_einmalig",
+      "bezeichnung": "Einmalige Kosten",
+      "gruppe": "Kosten",
+      "datentyp": "zahl",
+      "einheit": "€",
+      "definition": "Einrichtungs-, Anschluss- oder Hardwarekosten. Die Art der Kosten steht in der Bedingung.",
+      "optionen": null,
+      "kategorien": [
+        "endkunden"
+      ],
+      "sortierung": 73,
+      "in_uebersicht": false,
+      "aktiv": true
+    },
+    {
+      "key": "entgelt_sonstiges",
+      "bezeichnung": "Weitere Kosten",
+      "gruppe": "Kosten",
+      "datentyp": "text",
+      "einheit": null,
+      "definition": "Kosten, die sich keinem anderen Kostenmerkmal zuordnen lassen.",
+      "optionen": null,
+      "kategorien": [
+        "endkunden"
+      ],
+      "sortierung": 74,
+      "in_uebersicht": false,
+      "aktiv": true
+    },
+    {
+      "key": "mindestlaufzeit",
+      "bezeichnung": "Mindestlaufzeit",
+      "gruppe": "Vertrag",
+      "datentyp": "text",
+      "einheit": null,
+      "definition": "Mindestvertragslaufzeit laut Quelle.",
+      "optionen": null,
+      "kategorien": [
+        "endkunden",
+        "dienstleister"
+      ],
+      "sortierung": 80,
+      "in_uebersicht": false,
+      "aktiv": true
+    },
+    {
+      "key": "kuendigungsfrist",
+      "bezeichnung": "Kündigungsfrist",
+      "gruppe": "Vertrag",
+      "datentyp": "text",
+      "einheit": null,
+      "definition": "Kündigungsfrist laut Quelle.",
+      "optionen": null,
+      "kategorien": [
+        "endkunden",
+        "dienstleister"
+      ],
+      "sortierung": 81,
+      "in_uebersicht": false,
+      "aktiv": true
+    },
+    {
+      "key": "leistungsumfang",
+      "bezeichnung": "Leistungsumfang",
+      "gruppe": "Dienstleistung",
+      "datentyp": "text",
+      "einheit": null,
+      "definition": "Welche Prozesse der Direktvermarktung der Dienstleister für andere Unternehmen übernimmt.",
+      "optionen": null,
+      "kategorien": [
+        "dienstleister"
+      ],
+      "sortierung": 90,
+      "in_uebersicht": true,
+      "aktiv": true
+    },
+    {
+      "key": "zielkunden",
+      "bezeichnung": "Zielkunden",
+      "gruppe": "Dienstleistung",
+      "datentyp": "text",
+      "einheit": null,
+      "definition": "An welche Unternehmen sich die Leistung richtet.",
+      "optionen": null,
+      "kategorien": [
+        "dienstleister"
+      ],
+      "sortierung": 91,
+      "in_uebersicht": true,
+      "aktiv": true
+    },
+    {
+      "key": "fremde_marke",
+      "bezeichnung": "Angebot unter fremder Marke",
+      "gruppe": "Dienstleistung",
+      "datentyp": "auswahl",
+      "einheit": null,
+      "definition": "Ja, wenn Kunden des Dienstleisters die Direktvermarktung unter eigener Marke anbieten können.",
+      "optionen": [
+        {
+          "key": "ja",
+          "bezeichnung": "Ja"
+        },
+        {
+          "key": "nein",
+          "bezeichnung": "Nein"
+        }
+      ],
+      "kategorien": [
+        "dienstleister"
+      ],
+      "sortierung": 92,
+      "in_uebersicht": false,
+      "aktiv": true
+    },
+    {
+      "key": "hinweis",
+      "bezeichnung": "Hinweis",
+      "gruppe": "Allgemein",
+      "datentyp": "text",
+      "einheit": null,
+      "definition": "Sachliche Einordnung, die sich keinem anderen Merkmal zuordnen lässt.",
+      "optionen": null,
+      "kategorien": [
+        "endkunden",
+        "dienstleister"
+      ],
+      "sortierung": 99,
+      "in_uebersicht": false,
+      "aktiv": true
+    }
+  ],
+  "referenzfall": [
+    {
+      "key": "kwp7_ev30",
+      "bezeichnung": "7 kWp, 30 % Eigenverbrauch",
+      "kwp": 7,
+      "spez_ertrag_kwh_kwp": 900,
+      "eigenverbrauchsquote": 0.3,
+      "erzeugung_kwh": 6300,
+      "einspeisung_kwh": 4410,
+      "annahmen": "Spezifischer Ertrag 900 kWh/kWp. Eigenverbrauch als Anteil der Erzeugung. Ausrichtung und Messsystem werden nicht unterschieden. Fragt ein Rechner eine EEG-Vergütung ab, gilt der Satz zum Zeitpunkt der Abfrage.",
+      "gueltig_ab": "2026-10-16",
+      "sortierung": 10
+    },
+    {
+      "key": "kwp7_ev60",
+      "bezeichnung": "7 kWp, 60 % Eigenverbrauch",
+      "kwp": 7,
+      "spez_ertrag_kwh_kwp": 900,
+      "eigenverbrauchsquote": 0.6,
+      "erzeugung_kwh": 6300,
+      "einspeisung_kwh": 2520,
+      "annahmen": "Spezifischer Ertrag 900 kWh/kWp. Eigenverbrauch als Anteil der Erzeugung. Ausrichtung und Messsystem werden nicht unterschieden. Fragt ein Rechner eine EEG-Vergütung ab, gilt der Satz zum Zeitpunkt der Abfrage.",
+      "gueltig_ab": "2026-10-16",
+      "sortierung": 11
+    },
+    {
+      "key": "kwp10_ev30",
+      "bezeichnung": "10 kWp, 30 % Eigenverbrauch",
+      "kwp": 10,
+      "spez_ertrag_kwh_kwp": 900,
+      "eigenverbrauchsquote": 0.3,
+      "erzeugung_kwh": 9000,
+      "einspeisung_kwh": 6300,
+      "annahmen": "Spezifischer Ertrag 900 kWh/kWp. Eigenverbrauch als Anteil der Erzeugung. Ausrichtung und Messsystem werden nicht unterschieden. Fragt ein Rechner eine EEG-Vergütung ab, gilt der Satz zum Zeitpunkt der Abfrage.",
+      "gueltig_ab": "2026-10-16",
+      "sortierung": 20
+    },
+    {
+      "key": "kwp10_ev60",
+      "bezeichnung": "10 kWp, 60 % Eigenverbrauch",
+      "kwp": 10,
+      "spez_ertrag_kwh_kwp": 900,
+      "eigenverbrauchsquote": 0.6,
+      "erzeugung_kwh": 9000,
+      "einspeisung_kwh": 3600,
+      "annahmen": "Spezifischer Ertrag 900 kWh/kWp. Eigenverbrauch als Anteil der Erzeugung. Ausrichtung und Messsystem werden nicht unterschieden. Fragt ein Rechner eine EEG-Vergütung ab, gilt der Satz zum Zeitpunkt der Abfrage.",
+      "gueltig_ab": "2026-10-16",
+      "sortierung": 21
+    },
+    {
+      "key": "kwp25_ev30",
+      "bezeichnung": "25 kWp, 30 % Eigenverbrauch",
+      "kwp": 25,
+      "spez_ertrag_kwh_kwp": 900,
+      "eigenverbrauchsquote": 0.3,
+      "erzeugung_kwh": 22500,
+      "einspeisung_kwh": 15750,
+      "annahmen": "Spezifischer Ertrag 900 kWh/kWp. Eigenverbrauch als Anteil der Erzeugung. Ausrichtung und Messsystem werden nicht unterschieden. Fragt ein Rechner eine EEG-Vergütung ab, gilt der Satz zum Zeitpunkt der Abfrage.",
+      "gueltig_ab": "2026-10-16",
+      "sortierung": 30
+    },
+    {
+      "key": "kwp25_ev60",
+      "bezeichnung": "25 kWp, 60 % Eigenverbrauch",
+      "kwp": 25,
+      "spez_ertrag_kwh_kwp": 900,
+      "eigenverbrauchsquote": 0.6,
+      "erzeugung_kwh": 22500,
+      "einspeisung_kwh": 9000,
+      "annahmen": "Spezifischer Ertrag 900 kWh/kWp. Eigenverbrauch als Anteil der Erzeugung. Ausrichtung und Messsystem werden nicht unterschieden. Fragt ein Rechner eine EEG-Vergütung ab, gilt der Satz zum Zeitpunkt der Abfrage.",
+      "gueltig_ab": "2026-10-16",
+      "sortierung": 31
+    },
+    {
+      "key": "kwp100_ev30",
+      "bezeichnung": "100 kWp, 30 % Eigenverbrauch",
+      "kwp": 100,
+      "spez_ertrag_kwh_kwp": 900,
+      "eigenverbrauchsquote": 0.3,
+      "erzeugung_kwh": 90000,
+      "einspeisung_kwh": 63000,
+      "annahmen": "Spezifischer Ertrag 900 kWh/kWp. Eigenverbrauch als Anteil der Erzeugung. Ausrichtung und Messsystem werden nicht unterschieden. Fragt ein Rechner eine EEG-Vergütung ab, gilt der Satz zum Zeitpunkt der Abfrage.",
+      "gueltig_ab": "2026-10-16",
+      "sortierung": 40
+    },
+    {
+      "key": "kwp100_ev60",
+      "bezeichnung": "100 kWp, 60 % Eigenverbrauch",
+      "kwp": 100,
+      "spez_ertrag_kwh_kwp": 900,
+      "eigenverbrauchsquote": 0.6,
+      "erzeugung_kwh": 90000,
+      "einspeisung_kwh": 36000,
+      "annahmen": "Spezifischer Ertrag 900 kWh/kWp. Eigenverbrauch als Anteil der Erzeugung. Ausrichtung und Messsystem werden nicht unterschieden. Fragt ein Rechner eine EEG-Vergütung ab, gilt der Satz zum Zeitpunkt der Abfrage.",
+      "gueltig_ab": "2026-10-16",
+      "sortierung": 41
+    }
+  ],
+  "organisation": [
+    {
+      "id": "c9e6260a-f3b6-4eaf-982c-dedbd1f0814a",
+      "slug": "1komma5",
+      "name": "1KOMMA5°",
+      "rechtlicher_name": null,
+      "website": "https://1komma5.com",
+      "beschreibung": null,
+      "erstellt_am": "2026-10-16T14:23:04.310811+00:00",
+      "geaendert_am": "2026-10-16T14:23:04.310811+00:00"
+    },
+    {
+      "id": "4f7faeee-1237-4561-8e20-7d33816e4cd8",
+      "slug": "clever-pv",
+      "name": "clever-PV",
+      "rechtlicher_name": null,
+      "website": "https://clever-pv.com",
+      "beschreibung": null,
+      "erstellt_am": "2026-10-16T14:23:04.310811+00:00",
+      "geaendert_am": "2026-10-16T14:23:04.310811+00:00"
+    },
+    {
+      "id": "9925c582-d010-4c2b-a998-3bbc1dce162d",
+      "slug": "cloover",
+      "name": "Cloover",
+      "rechtlicher_name": "Cloover Energy GmbH",
+      "website": "https://www.cloover.com",
+      "beschreibung": null,
+      "erstellt_am": "2026-10-16T14:43:55.429604+00:00",
+      "geaendert_am": "2026-10-16T14:43:55.429604+00:00"
+    },
+    {
+      "id": "a0e8e42e-0244-46e2-a1db-a3f54ddd9966",
+      "slug": "eon",
+      "name": "E.ON",
+      "rechtlicher_name": null,
+      "website": "https://www.eon.de",
+      "beschreibung": null,
+      "erstellt_am": "2026-10-16T14:23:04.310811+00:00",
+      "geaendert_am": "2026-10-16T14:23:04.310811+00:00"
+    },
+    {
+      "id": "847655e6-e397-4ab4-9a10-130d348da611",
+      "slug": "enpal",
+      "name": "Enpal",
+      "rechtlicher_name": null,
+      "website": "https://www.enpal.de",
+      "beschreibung": null,
+      "erstellt_am": "2026-10-16T14:23:04.310811+00:00",
+      "geaendert_am": "2026-10-16T14:23:04.310811+00:00"
+    },
+    {
+      "id": "49a5d584-3f96-47d3-be27-f0af1f689063",
+      "slug": "enviam",
+      "name": "enviaM",
+      "rechtlicher_name": "envia Mitteldeutsche Energie AG",
+      "website": "https://www.enviam.de",
+      "beschreibung": null,
+      "erstellt_am": "2026-10-16T14:23:04.310811+00:00",
+      "geaendert_am": "2026-10-16T14:44:13.451989+00:00"
+    },
+    {
+      "id": "1b9af23c-86b0-45a3-be5e-555a3bc8f85d",
+      "slug": "inexogy",
+      "name": "inexogy",
+      "rechtlicher_name": null,
+      "website": "https://www.inexogy.com",
+      "beschreibung": null,
+      "erstellt_am": "2026-10-16T14:23:04.310811+00:00",
+      "geaendert_am": "2026-10-16T14:23:04.310811+00:00"
+    },
+    {
+      "id": "0e70aaa4-e0d0-4604-a90f-9436cc60d34b",
+      "slug": "lumenaza",
+      "name": "Lumenaza",
+      "rechtlicher_name": "Lumenaza GmbH",
+      "website": "https://lumenaza.de",
+      "beschreibung": null,
+      "erstellt_am": "2026-10-16T14:23:04.310811+00:00",
+      "geaendert_am": "2026-10-16T14:23:04.310811+00:00"
+    },
+    {
+      "id": "396d956f-2a60-4cf7-b4eb-3bfc68f1b0b8",
+      "slug": "octopus-energy",
+      "name": "Octopus Energy",
+      "rechtlicher_name": "Octopus Energy Germany GmbH",
+      "website": "https://octopusenergy.de",
+      "beschreibung": null,
+      "erstellt_am": "2026-10-16T14:23:04.310811+00:00",
+      "geaendert_am": "2026-10-16T14:23:04.310811+00:00"
+    },
+    {
+      "id": "4d1fe520-7f87-466b-827e-6e1c5017f65d",
+      "slug": "rabot-energy",
+      "name": "Rabot Energy",
+      "rechtlicher_name": null,
+      "website": "https://www.rabot.energy",
+      "beschreibung": null,
+      "erstellt_am": "2026-10-16T14:23:04.310811+00:00",
+      "geaendert_am": "2026-10-16T14:23:04.310811+00:00"
+    },
+    {
+      "id": "da464e8f-95a9-49c3-90f6-f8fbfcd31e66",
+      "slug": "solarize",
+      "name": "Solarize",
+      "rechtlicher_name": "Solarize Energy Solutions GmbH",
+      "website": "https://www.solarize.de",
+      "beschreibung": null,
+      "erstellt_am": "2026-10-16T14:23:04.310811+00:00",
+      "geaendert_am": "2026-10-16T14:23:04.310811+00:00"
+    },
+    {
+      "id": "f270da06-d52d-4e1b-aeff-dc4e603361d8",
+      "slug": "sonnen",
+      "name": "sonnen",
+      "rechtlicher_name": null,
+      "website": "https://sonnen.de",
+      "beschreibung": null,
+      "erstellt_am": "2026-10-16T14:23:04.310811+00:00",
+      "geaendert_am": "2026-10-16T14:23:04.310811+00:00"
+    },
+    {
+      "id": "8aab6323-0582-4590-a7f4-1d9910351ee9",
+      "slug": "spotmyenergy",
+      "name": "SpotmyEnergy",
+      "rechtlicher_name": null,
+      "website": "https://spotmyenergy.de",
+      "beschreibung": null,
+      "erstellt_am": "2026-10-16T14:23:04.310811+00:00",
+      "geaendert_am": "2026-10-16T14:23:04.310811+00:00"
+    }
+  ],
+  "angebot": [],
+  "quelle": [
+    {
+      "id": "7899210f-f209-46a9-8f1d-db55bcfdb7e9",
+      "typ": "website",
+      "titel": "Direktvermarktung für Privatkunden",
+      "url": "https://www.luox-energy.de/zuhause/direktvermarktung",
+      "herausgeber": "LUOX Energy",
+      "organisation_id": "0e70aaa4-e0d0-4604-a90f-9436cc60d34b",
+      "veroeffentlicht_am": null,
+      "abgerufen_am": "2026-10-16",
+      "archiv_url": null,
+      "beleg_pfad": null,
+      "notiz": null,
+      "erstellt_am": "2026-10-16T14:23:04.310811+00:00",
+      "geaendert_am": "2026-10-16T14:23:04.310811+00:00"
+    },
+    {
+      "id": "b1355da1-d5ee-4bc1-b768-4b2bf10d88c2",
+      "typ": "pressemitteilung",
+      "titel": "Die Marke LUOX Energy",
+      "url": "https://lumenaza.de/en/blog/die-marke-luox-energy",
+      "herausgeber": "Lumenaza GmbH",
+      "organisation_id": "0e70aaa4-e0d0-4604-a90f-9436cc60d34b",
+      "veroeffentlicht_am": "2024-07-17",
+      "abgerufen_am": "2026-10-16",
+      "archiv_url": null,
+      "beleg_pfad": null,
+      "notiz": null,
+      "erstellt_am": "2026-10-16T14:23:04.310811+00:00",
+      "geaendert_am": "2026-10-16T14:23:04.310811+00:00"
+    },
+    {
+      "id": "c866d64f-c625-4cee-b151-6df61ae3cd3d",
+      "typ": "agb",
+      "titel": "Allgemeine Geschäftsbedingungen für die Direktvermarktung von PV-Strom – Zero Bills, Stand 08.09.2025",
+      "url": "https://a.storyblok.com/f/144190/x/b427e464ae/oed-agb-direktvermarktung.pdf",
+      "herausgeber": "Octopus Energy Germany GmbH",
+      "organisation_id": "396d956f-2a60-4cf7-b4eb-3bfc68f1b0b8",
+      "veroeffentlicht_am": "2025-09-08",
+      "abgerufen_am": "2026-10-16",
+      "archiv_url": null,
+      "beleg_pfad": null,
+      "notiz": null,
+      "erstellt_am": "2026-10-16T14:23:04.310811+00:00",
+      "geaendert_am": "2026-10-16T14:23:04.310811+00:00"
+    },
+    {
+      "id": "8086cbf2-d377-4d9f-aac6-346ecc6dd429",
+      "typ": "medienbericht",
+      "titel": "Octopus Energy vermarktet PV-Strom kleiner Anlagen",
+      "url": "https://www.solarserver.de/2023/07/03/octopus-energy-vermarktet-pv-strom-kleiner-anlagen/",
+      "herausgeber": "Solarserver",
+      "organisation_id": null,
+      "veroeffentlicht_am": "2023-07-03",
+      "abgerufen_am": "2026-10-16",
+      "archiv_url": null,
+      "beleg_pfad": null,
+      "notiz": null,
+      "erstellt_am": "2026-10-16T14:23:04.310811+00:00",
+      "geaendert_am": "2026-10-16T14:23:04.310811+00:00"
+    },
+    {
+      "id": "4bd33e87-d016-4a4f-90aa-a361ff892752",
+      "typ": "pressemitteilung",
+      "titel": "Gemeinsame Pressemitteilung clever-PV, Rabot Energy und inexogy",
+      "url": "https://www.inexogy.com/wp-content/uploads/2026/07/Pressmitteilung-clever-pv-rabot-inexogy.pdf",
+      "herausgeber": "clever-PV, Rabot Energy, inexogy",
+      "organisation_id": "4d1fe520-7f87-466b-827e-6e1c5017f65d",
+      "veroeffentlicht_am": "2026-07-29",
+      "abgerufen_am": "2026-10-16",
+      "archiv_url": null,
+      "beleg_pfad": null,
+      "notiz": null,
+      "erstellt_am": "2026-10-16T14:23:04.310811+00:00",
+      "geaendert_am": "2026-10-16T14:23:04.310811+00:00"
+    },
+    {
+      "id": "09fb2b09-b002-4daa-a5a6-550a2ebd5533",
+      "typ": "medienbericht",
+      "titel": "Solarstrom ohne Förderung: Diese Anbieter vermarkten kleine PV-Anlagen",
+      "url": "https://www.zfk.de/unternehmen/direktvermarktung/pv-anlagen-einspeiseverguetung-direktvermarktung-anbieter",
+      "herausgeber": "ZfK – Zeitung für kommunale Wirtschaft",
+      "organisation_id": null,
+      "veroeffentlicht_am": "2026-07-31",
+      "abgerufen_am": "2026-10-16",
+      "archiv_url": null,
+      "beleg_pfad": null,
+      "notiz": null,
+      "erstellt_am": "2026-10-16T14:23:04.310811+00:00",
+      "geaendert_am": "2026-10-16T14:23:04.310811+00:00"
+    },
+    {
+      "id": "4b2018d8-0e6b-4940-b94a-4d9b5fa4405b",
+      "typ": "website",
+      "titel": "SmartFlux – Einspeisetarif",
+      "url": "https://spotmyenergy.de/haushalt/produkte-direktvermarktung/",
+      "herausgeber": "SpotmyEnergy",
+      "organisation_id": "8aab6323-0582-4590-a7f4-1d9910351ee9",
+      "veroeffentlicht_am": "2026-07-17",
+      "abgerufen_am": "2026-10-16",
+      "archiv_url": null,
+      "beleg_pfad": null,
+      "notiz": "Seite laut Metadaten zuletzt geändert am 07.09.2026",
+      "erstellt_am": "2026-10-16T14:23:04.310811+00:00",
+      "geaendert_am": "2026-10-16T14:23:04.310811+00:00"
+    },
+    {
+      "id": "8716e834-ff34-4605-a7ff-3c60181f9b5c",
+      "typ": "medienbericht",
+      "titel": "E.ON will Solarstrom mit festem Bonus vermarkten",
+      "url": "https://www.solarserver.de/2026/09/18/e-on-einspeisebonus-fuer-neue-pv-anlagen-ab-2027/",
+      "herausgeber": "Solarserver",
+      "organisation_id": null,
+      "veroeffentlicht_am": "2026-09-18",
+      "abgerufen_am": "2026-10-16",
+      "archiv_url": null,
+      "beleg_pfad": null,
+      "notiz": "Bericht zur Produktvorstellung von E.ON am 16.09.2026",
+      "erstellt_am": "2026-10-16T14:23:04.310811+00:00",
+      "geaendert_am": "2026-10-16T14:23:04.310811+00:00"
+    },
+    {
+      "id": "c7dbac0b-8d53-42f9-a58e-53f3a583c874",
+      "typ": "website",
+      "titel": "Strom an der Börse verkaufen",
+      "url": "https://1komma5.com/de/strommarkt/strom-an-der-boerse-verkaufen/",
+      "herausgeber": "1KOMMA5°",
+      "organisation_id": "c9e6260a-f3b6-4eaf-982c-dedbd1f0814a",
+      "veroeffentlicht_am": "2025-01-30",
+      "abgerufen_am": "2026-10-16",
+      "archiv_url": null,
+      "beleg_pfad": null,
+      "notiz": "Datum ist das auf der Seite genannte Aktualisierungsdatum",
+      "erstellt_am": "2026-10-16T14:23:04.310811+00:00",
+      "geaendert_am": "2026-10-16T14:23:04.310811+00:00"
+    },
+    {
+      "id": "f8f41de4-b5da-40f3-ae2e-9bec10e92d14",
+      "typ": "website",
+      "titel": "Enpal Vergütung im Vergleich zur Einspeisevergütung",
+      "url": "https://www.enpal.de/strom/vergleich-enpal-verguetung-einspeiseverguetung",
+      "herausgeber": "Enpal",
+      "organisation_id": "847655e6-e397-4ab4-9a10-130d348da611",
+      "veroeffentlicht_am": "2026-07-28",
+      "abgerufen_am": "2026-10-16",
+      "archiv_url": null,
+      "beleg_pfad": null,
+      "notiz": "Datum ist das auf der Seite genannte Aktualisierungsdatum",
+      "erstellt_am": "2026-10-16T14:23:04.310811+00:00",
+      "geaendert_am": "2026-10-16T14:23:04.310811+00:00"
+    },
+    {
+      "id": "3af17a6d-0ac3-4a29-89b2-382720b56fa6",
+      "typ": "website",
+      "titel": "Direktvermarktung von Solarstrom",
+      "url": "https://www.enpal.de/photovoltaik/direktvermarktung",
+      "herausgeber": "Enpal",
+      "organisation_id": "847655e6-e397-4ab4-9a10-130d348da611",
+      "veroeffentlicht_am": "2026-07-28",
+      "abgerufen_am": "2026-10-16",
+      "archiv_url": null,
+      "beleg_pfad": null,
+      "notiz": "Datum ist das auf der Seite genannte Aktualisierungsdatum",
+      "erstellt_am": "2026-10-16T14:23:04.310811+00:00",
+      "geaendert_am": "2026-10-16T14:23:04.310811+00:00"
+    },
+    {
+      "id": "0fa26d61-1032-4162-975b-fd0ea04bed77",
+      "typ": "website",
+      "titel": "Lumenaza – Startseite",
+      "url": "https://lumenaza.de",
+      "herausgeber": "Lumenaza GmbH",
+      "organisation_id": "0e70aaa4-e0d0-4604-a90f-9436cc60d34b",
+      "veroeffentlicht_am": null,
+      "abgerufen_am": "2026-10-16",
+      "archiv_url": null,
+      "beleg_pfad": null,
+      "notiz": null,
+      "erstellt_am": "2026-10-16T14:23:04.310811+00:00",
+      "geaendert_am": "2026-10-16T14:23:04.310811+00:00"
+    },
+    {
+      "id": "f641cc7f-6c24-4f0c-adfd-3a53e3ad2bc9",
+      "typ": "website",
+      "titel": "Solarize – Startseite",
+      "url": "https://www.solarize.de",
+      "herausgeber": "Solarize Energy Solutions GmbH",
+      "organisation_id": "da464e8f-95a9-49c3-90f6-f8fbfcd31e66",
+      "veroeffentlicht_am": null,
+      "abgerufen_am": "2026-10-16",
+      "archiv_url": null,
+      "beleg_pfad": null,
+      "notiz": null,
+      "erstellt_am": "2026-10-16T14:23:04.310811+00:00",
+      "geaendert_am": "2026-10-16T14:23:04.310811+00:00"
+    },
+    {
+      "id": "26b402ec-74c6-4b33-b5c0-7366e26ee0a7",
+      "typ": "website",
+      "titel": "Cloover Einspeisevergütung · Direktvermarktungstarif für Solaranlagen bis 25 kWp",
+      "url": "https://www.cloover.com/direktvermarktung",
+      "herausgeber": "Cloover",
+      "organisation_id": "9925c582-d010-4c2b-a998-3bbc1dce162d",
+      "veroeffentlicht_am": null,
+      "abgerufen_am": "2026-10-16",
+      "archiv_url": null,
+      "beleg_pfad": null,
+      "notiz": "Laut Seite zuletzt aktualisiert am 14.10.2026.",
+      "erstellt_am": "2026-10-16T14:43:55.429604+00:00",
+      "geaendert_am": "2026-10-16T14:43:55.429604+00:00"
+    },
+    {
+      "id": "9fc09797-983c-498c-9eda-001385543304",
+      "typ": "pressemitteilung",
+      "titel": "Cloover startet die „Cloover Einspeisevergütung“: Direktvermarktung für private Solaranlagen",
+      "url": "https://www.onvista.de/news/2026/10-15-eqs-news-cloover-startet-die-cloover-einspeiseverguetung-direktvermarktung-fuer-private-solaranlagen-0-37-26564373",
+      "herausgeber": "Cloover GmbH (über EQS News)",
+      "organisation_id": "9925c582-d010-4c2b-a998-3bbc1dce162d",
+      "veroeffentlicht_am": "2026-10-15",
+      "abgerufen_am": "2026-10-16",
+      "archiv_url": null,
+      "beleg_pfad": null,
+      "notiz": "EQS News ID 2416448; abgerufen über onvista.",
+      "erstellt_am": "2026-10-16T14:43:55.429604+00:00",
+      "geaendert_am": "2026-10-16T14:43:55.429604+00:00"
+    },
+    {
+      "id": "d06ea56e-2a1b-4935-aa11-9ae435c50b7c",
+      "typ": "website",
+      "titel": "MEIN SOLAR Plus – Direktvermarktung von PV-Strom",
+      "url": "https://www.solar.enviam.de/solarprodukte/direktvermarktung-von-pv-strom",
+      "herausgeber": "envia Mitteldeutsche Energie AG",
+      "organisation_id": "49a5d584-3f96-47d3-be27-f0af1f689063",
+      "veroeffentlicht_am": null,
+      "abgerufen_am": "2026-10-16",
+      "archiv_url": null,
+      "beleg_pfad": null,
+      "notiz": null,
+      "erstellt_am": "2026-10-16T14:44:13.451989+00:00",
+      "geaendert_am": "2026-10-16T14:44:13.451989+00:00"
+    },
+    {
+      "id": "bdbf46d7-1762-447b-927d-176085e85fa4",
+      "typ": "agb",
+      "titel": "Vertragsbedingungen „Cloover Einspeisevergütung“",
+      "url": "https://energy.cloover.com/direktvermarktung/vertragsbedingungen.pdf",
+      "herausgeber": "Cloover Energy GmbH",
+      "organisation_id": "9925c582-d010-4c2b-a998-3bbc1dce162d",
+      "veroeffentlicht_am": "2026-10-15",
+      "abgerufen_am": "2026-10-16",
+      "archiv_url": null,
+      "beleg_pfad": null,
+      "notiz": null,
+      "erstellt_am": "2026-10-16T14:56:52.18308+00:00",
+      "geaendert_am": "2026-10-16T14:56:52.18308+00:00"
+    },
+    {
+      "id": "9fb82a64-dc70-4b73-952b-00521256a5c1",
+      "typ": "website",
+      "titel": "Cloover Einspeisevergütung – Rechner und Online-Abschluss",
+      "url": "https://energy.cloover.com/direktvermarktung",
+      "herausgeber": "Cloover Energy GmbH",
+      "organisation_id": "9925c582-d010-4c2b-a998-3bbc1dce162d",
+      "veroeffentlicht_am": null,
+      "abgerufen_am": "2026-10-16",
+      "archiv_url": null,
+      "beleg_pfad": null,
+      "notiz": "Bestellstrecke; Inhalte ohne Abschluss abgerufen.",
+      "erstellt_am": "2026-10-16T14:56:52.18308+00:00",
+      "geaendert_am": "2026-10-16T14:56:52.18308+00:00"
+    },
+    {
+      "id": "2e070adb-0744-42cc-bb67-a17e3a00fe76",
+      "typ": "website",
+      "titel": "Direktvermarktung für private Photovoltaik: Lohnt sich das? Ratgeber 2026",
+      "url": "https://www.cloover.com/direktvermarktung-ratgeber",
+      "herausgeber": "Cloover",
+      "organisation_id": "9925c582-d010-4c2b-a998-3bbc1dce162d",
+      "veroeffentlicht_am": null,
+      "abgerufen_am": "2026-10-16",
+      "archiv_url": null,
+      "beleg_pfad": null,
+      "notiz": "Laut Seite Stand 14.10.2026.",
+      "erstellt_am": "2026-10-16T14:56:52.18308+00:00",
+      "geaendert_am": "2026-10-16T14:56:52.18308+00:00"
+    }
+  ],
+  "angabe_aktuell": [],
+  "angabe_verlauf": [],
+  "aenderungsprotokoll": [],
+  "kalkulator": [],
+  "beziehung": []
+}
