@@ -18,7 +18,7 @@ Verbindliche Regeln für alle, die Daten im Transparenzportal Direktvermarktung 
 | Tabelle | Inhalt |
 |---|---|
 | `organisation` | Unternehmen. Ein Unternehmen kann mehrere Angebote haben (Lumenaza: Plattform und Marke LUOX). |
-| `angebot` | Ein Produkt. `kategorie_key`: `endkunden` oder `dienstleister`. `slug` bildet die URL. |
+| `angebot` | Ein Produkt. `kategorie_key`: `endkunden`, `installateure` oder `dienstleister` (Bereich „Angebote für Anbieter für Direktvermarktung“). `slug` bildet die URL. |
 | `quelle` | Beleg mit `typ`, `titel`, `url`, `herausgeber`, `veroeffentlicht_am`, `abgerufen_am`, optional `archiv_url` und `beleg_pfad` (Datei im Storage-Bucket `belege`). |
 | `merkmal` | Katalog der Merkmale mit Datentyp, Einheit, Definition und Ausprägungen. Neue Merkmale nur nach Rücksprache. |
 | `angabe` | Ein Wert zu einem Merkmal eines Angebots. Wird nur fortgeschrieben, nie geändert oder gelöscht. |
@@ -91,6 +91,17 @@ Die Merkmale `stromliefervertrag`, `zusatzhardware`, `speicher` und `anlage_vom_
 
 `organisation` enthält die Anbieter (Unternehmen), `angebot` deren Angebote (Produkte); ein Anbieter kann mehrere Angebote haben (etwa Octopus Energy: SolarUp und Zero Bills). Die Kennzahlen der Startseite zählen Anbieter, nicht Angebote. Marken stehen als eigener Anbieter mit dem rechtlichen Namen des Unternehmens (LUOX Energy, rechtlich Lumenaza GmbH). Übersicht in der Sicht `v_anbieter`.
 
+## Angebote für Installateure (seit 17.10.2026)
+
+Bereich zwischen den Angeboten für Endkunden und denen für Anbieter für Direktvermarktung, `kategorie_key = 'installateure'`. Ergänzende Information: zählt nicht in die Kennzahlen der Startseite.
+
+- Aufnahme: Angebote, mit denen Unternehmen Installationsbetrieben ermöglichen, ihren Kunden Direktvermarktung anzubieten oder zu vermitteln (Partnerprogramm, eigene Marke, Plattform), sofern der Anbieter sie öffentlich beschreibt und sie die Direktvermarktung einschließen oder vom Anbieter ausdrücklich in diesen Zusammenhang gestellt werden. Richtet sich ein Angebot zugleich an Installateure und an Energieversorger oder Hersteller, steht es hier.
+- Merkmale (keine neuen): `status`, gegebenenfalls `status_kurz` und `start_angekuendigt`, `erstmals_veroeffentlicht` (erste Veröffentlichung im Zusammenhang mit der Direktvermarktung, bestimmt die Reihenfolge), `leistungsumfang` (ein bis zwei sachliche Sätze), `zielkunden`, bei Bedarf `hinweis`. Zitate in `originalwortlaut`.
+- Keine Werbesprüche übernehmen, auch nicht als Zitat auf der Startseite oder im Titel einer Quelle; nur sachliche Aussagen (was, für wen, ab wann, welche Bedingungen).
+- Gemeinsame Angebote mehrerer Unternehmen stehen beim Unternehmen, das die Direktvermarktung erbringt; die Partner stehen im Namen des Angebots („mit …“).
+- Liegt nur Fachpresse vor, Quelle `medienbericht`; die Startseite markiert das mit „laut Fachpresse“.
+- Neue Angebote wie alle anderen erst als Entwurf, dann veröffentlicht; Änderungen erscheinen im Änderungsprotokoll.
+
 ## Korrekturen des Startbestands
 
 Korrekturen an Angaben, die schon im Startbestand vom 16.10.2026 hätten richtig sein müssen, werden wie jede Korrektur fortgeschrieben, aber mit `startbestand = true` erfasst. Sie erscheinen nicht im Änderungsprotokoll der Website, bleiben aber in `aenderungen.csv` mit Kennzeichen enthalten. Nur auf ausdrückliche Vorgabe von Daniel.
@@ -109,7 +120,7 @@ Korrekturen an Angaben, die schon im Startbestand vom 16.10.2026 hätten richtig
 
 ## Aufnahmekriterien
 
-Aufgenommen wird jedes Angebot, mit dem PV-Anlagen bis 100 kWp (Modulleistung) direkt vermarktet werden, auch in Verbindung mit Stromtarif, Hardware, Community oder Service, gefördert wie ungefördert. „Angekündigt“ verlangt eine öffentliche Ankündigung mit Quelle. Dienstleister und Plattformen, die Prozesse der Direktvermarktung für andere übernehmen, gehören in die Kategorie `dienstleister`.
+Aufgenommen wird jedes Angebot, mit dem PV-Anlagen bis 100 kWp (Modulleistung) direkt vermarktet werden, auch in Verbindung mit Stromtarif, Hardware, Community oder Service, gefördert wie ungefördert. „Angekündigt“ verlangt eine öffentliche Ankündigung mit Quelle. Dienstleister und Plattformen, die Prozesse der Direktvermarktung für andere übernehmen, gehören in die Kategorie `dienstleister` (Bereich „Angebote für Anbieter für Direktvermarktung“). Angebote an Installationsbetriebe gehören in die Kategorie `installateure` (siehe oben).
 
 ## Veröffentlichung
 

@@ -294,11 +294,19 @@ function erstVeroeffentlicht(angebot) {
   return e?.wert_datum || null;
 }
 
+// Bereiche der Startseite (Kategorie des Angebots)
+const BEREICH = {
+  endkunden: 'Angebote für Endkunden',
+  installateure: 'Angebote für Installateure',
+  dienstleister: 'Angebote für Anbieter für Direktvermarktung'
+};
+
 const anbieterName = (a) => `${a.organisation?.name || ''} ${a.name}`;
 const sortierteAngebote = (kat) => angebote
   .filter((a) => a.kategorie_key === kat)
   .map((a) => ({ ...a, verf: verfuegbarkeit(a), grp: gruppe(a), erst: erstVeroeffentlicht(a), stand: datenstand(a) }))
   .sort((a, b) => {
+    if (kat === 'installateure') return String(a.erst || '9999').localeCompare(String(b.erst || '9999')) || anbieterName(a).localeCompare(anbieterName(b), 'de', { sensitivity: 'base' });
     if (kat !== 'endkunden') return a.name.localeCompare(b.name, 'de');
     return a.grp.rang - b.grp.rang
       || (a.grp.key === 'ohne' ? String(a.erst || '9999').localeCompare(String(b.erst || '9999')) : 0)
@@ -306,7 +314,9 @@ const sortierteAngebote = (kat) => angebote
   });
 
 const endkunden = sortierteAngebote('endkunden');
+const installateure = sortierteAngebote('installateure');
 const dienstleister = sortierteAngebote('dienstleister');
+const alleAngebote = [...endkunden, ...installateure, ...dienstleister];
 
 const letzteErfassung = [...daten.angabe_aktuell.map((x) => x.erfasst_am), ...kalkAktuell.map((x) => x.erfasst_am)].filter(Boolean).sort().pop();
 const STAND = letzteErfassung ? isoTag(letzteErfassung) : isoTag(new Date().toISOString());
@@ -614,6 +624,24 @@ function startseite() {
 </article>`;
   }).join('\n');
 
+  const nurFachpresse = (liste) => liste.length > 0 && liste.every((x) => quellen[x.quelle_id]?.typ === 'medienbericht');
+  const inst = installateure.map((a) => {
+    const umfang = angabenVon(a, 'leistungsumfang').filter(veroeff);
+    const hinw = angabenVon(a, 'hinweis').filter(veroeff);
+    const ziel = angabenVon(a, 'zielkunden').filter(veroeff);
+    const erstA = angabenVon(a, 'erstmals_veroeffentlicht').find(veroeff);
+    const urlQuelle = a.url ? daten.quelle.find((q) => q.url === a.url) : null;
+    const urlText = urlQuelle?.typ === 'pressemitteilung' ? 'Pressemitteilung' : 'Seite des Anbieters';
+    const meta = [statusZeile(a), erstA ? `erstmals veröffentlicht ${beleg([erstA], datum(erstA.wert_datum))}` : '', ziel.length ? `für ${beleg(ziel, esc(ziel[0].wert_text))}` : ''].filter(Boolean).join('<span class="trenner"> · </span>');
+    return `<li class="inst${a.oeffentlich ? '' : ' entwurf'}" id="${esc(a.slug)}">
+  <p class="inst-kopf"><span class="anb">${esc(a.organisation?.name || '')}</span> <a href="${L('angebote/' + a.slug)}">${esc(a.name)}</a>${a.oeffentlich ? '' : ' <span class="entwurf-marke">Entwurf</span>'}</p>
+  <p class="inst-meta">${meta}</p>
+  <p class="inst-text">${nurFachpresse(umfang) ? INDIREKT_MARKE : ''}${umfang.length ? beleg(umfang, esc(umfang[0].wert_text)) : esc(a.kurzbeschreibung || '')}</p>
+  ${hinw.length ? `<p class="inst-hinweis">${nurFachpresse(hinw) ? INDIREKT_MARKE : ''}${beleg(hinw, esc(hinw[0].wert_text))}</p>` : ''}
+  <p class="inst-links">${a.url ? `<a class="extern" href="${esc(a.url)}" rel="noopener" target="_blank">${urlText}</a>` : ''}<a href="${L('angebote/' + a.slug)}">Quellen &amp; Verlauf</a></p>
+</li>`;
+  }).join('\n');
+
   const inhalt = `
 <section class="auftakt">
   <div class="rahmen">
@@ -648,9 +676,20 @@ ${endkunden.length ? zeilen : '<tr><td colspan="7">Die ersten Einträge werden g
   </div>
 </section>
 
-<section class="abschnitt abschnitt-flaeche" aria-labelledby="h-dl">
+<section class="abschnitt abschnitt-flaeche" id="installateure" aria-labelledby="h-inst">
   <div class="rahmen">
-    <h2 id="h-dl">Angebote für Unternehmen</h2>
+    <h2 id="h-inst">${BEREICH.installateure}</h2>
+    <p class="einleitung">Angebote, mit denen Unternehmen Installationsbetrieben ermöglichen, ihren Kundinnen und Kunden Direktvermarktung anzubieten oder zu vermitteln. Sortiert nach erster Veröffentlichung im Zusammenhang mit der Direktvermarktung; die Beschreibungen geben knapp wieder, was die Quellen nennen.</p>
+    ${kiHinweis()}
+    <ul class="inst-liste">
+${inst || '<li>Die ersten Einträge werden geprüft.</li>'}
+    </ul>
+  </div>
+</section>
+
+<section class="abschnitt abschnitt-flaeche" id="anbieter" aria-labelledby="h-dl">
+  <div class="rahmen">
+    <h2 id="h-dl">${BEREICH.dienstleister}</h2>
     <p class="einleitung">Plattformen und Dienstleistungen für Unternehmen, die selbst Direktvermarktung anbieten wollen.</p>
     <div class="dl-raster">
 ${dl || '<p>Die ersten Einträge werden geprüft.</p>'}
@@ -667,7 +706,7 @@ ${dl || '<p>Die ersten Einträge werden geprüft.</p>'}
 
   return seite({
     tiefe, titel: null, kanonisch: '', aktiv: 'start', inhalt,
-    beschreibung: 'Wer bietet Direktvermarktung für Strom aus kleinen PV-Anlagen an? Angebote bis 100 kWp mit Status, Einschränkungen, Vergütungsmodell und Preisgestaltung, jede Angabe mit Quelle.'
+    beschreibung: 'Wer bietet Direktvermarktung für Strom aus kleinen PV-Anlagen an? Angebote bis 100 kWp mit Status, Einschränkungen, Vergütungsmodell und Preisgestaltung, dazu Angebote für Installateure und für Anbieter, jede Angabe mit Quelle.'
   });
 }
 
@@ -823,7 +862,7 @@ ${[...nummern.entries()].map(([id, n]) => {
   const inhalt = `
 <section class="auftakt auftakt-klein">
   <div class="rahmen">
-    <p class="pfad"><a href="${L('')}">Übersicht</a> · ${esc(a.kategorie_key === 'dienstleister' ? 'Angebote für Unternehmen' : 'Angebote für Endkunden')}</p>
+    <p class="pfad"><a href="${L('')}">Übersicht</a> · ${esc(BEREICH[a.kategorie_key] || '')}</p>
     <h1>${esc(a.name)}${a.oeffentlich ? '' : ' <span class="entwurf-marke">Entwurf</span>'}</h1>
     <p class="lead">${esc(a.organisation?.name || '')}${a.kurzbeschreibung ? ` · ${esc(a.kurzbeschreibung)}` : ''}</p>
     <div class="kopfzeile">
@@ -846,7 +885,9 @@ ${quellenHtml}
 
   return seite({
     tiefe, titel: a.name, kanonisch: 'angebote/' + a.slug, aktiv: 'start', inhalt,
-    beschreibung: `${a.name} (${a.organisation?.name || ''}): Verfügbarkeit, Voraussetzungen und Kosten der Direktvermarktung mit Quellen.`
+    beschreibung: a.kategorie_key === 'endkunden'
+      ? `${a.name} (${a.organisation?.name || ''}): Verfügbarkeit, Voraussetzungen und Kosten der Direktvermarktung mit Quellen.`
+      : `${a.name} (${a.organisation?.name || ''}): ${BEREICH[a.kategorie_key] || 'Angebot'} im Zusammenhang mit der Direktvermarktung, mit Quellen.`
   });
 }
 
@@ -888,8 +929,9 @@ function aenderungsseite() {
       const imStart = angebote.filter((a) => a.aufgenommen_am && isoTag(a.aufgenommen_am) <= startBis);
       const ek = imStart.filter((a) => a.kategorie_key === 'endkunden').length;
       const dl = imStart.filter((a) => a.kategorie_key === 'dienstleister').length;
+      const ins = imStart.filter((a) => a.kategorie_key === 'installateure').length;
       for (let i = eintraege.length - 1; i >= 0; i--) if (eintraege[i].tag <= startBis) eintraege.splice(i, 1);
-      eintraege.push({ tag: startBis, sort: startBis + ' 0', art: 'Startbestand', html: `Erste Veröffentlichung mit ${ek} Angeboten für Endkunden und ${dl} für Unternehmen. Änderungen werden ab dem Folgetag einzeln dokumentiert; Bearbeitungsstände vor der Veröffentlichung stehen in der Datei <a href="${L('daten/aenderungen.csv')}">aenderungen.csv</a>.` });
+      eintraege.push({ tag: startBis, sort: startBis + ' 0', art: 'Startbestand', html: `Erste Veröffentlichung mit ${ek} Angeboten für Endkunden${ins ? `, ${ins} für Installateure` : ''} und ${dl} für Anbieter für Direktvermarktung (damals „für Unternehmen“). Änderungen werden ab dem Folgetag einzeln dokumentiert; Bearbeitungsstände vor der Veröffentlichung stehen in der Datei <a href="${L('daten/aenderungen.csv')}">aenderungen.csv</a>.` });
     }
   }
   eintraege.sort((a, b) => String(b.sort).localeCompare(String(a.sort)));
@@ -932,11 +974,12 @@ function methodikseite() {
 <section>
 <h2>Gegenstand</h2>
 <p>Das Portal erfasst Angebote, mit denen Betreiber von PV-Anlagen bis 100&nbsp;kWp installierter Modulleistung ihren Strom direkt vermarkten lassen können. Erfasst werden eigenständige Angebote ebenso wie Angebote in Verbindung mit Stromtarif, Hardware, Gemeinschaftsmodellen oder weiteren Leistungen, gefördert wie ungefördert.</p>
-<p>Getrennt davon stehen Angebote für Unternehmen: Plattformen und Dienstleistungen für Unternehmen, die selbst Direktvermarktung anbieten wollen.</p>
+<p>Daneben stehen zwei ergänzende Bereiche: Angebote für Installateure, mit denen Unternehmen Installationsbetrieben ermöglichen, ihren Kundinnen und Kunden Direktvermarktung anzubieten oder zu vermitteln, etwa als Partnerprogramm, unter eigener Marke oder über eine Plattform; und Angebote für Anbieter für Direktvermarktung, also Plattformen und Dienstleistungen für Unternehmen, die selbst Direktvermarktung anbieten wollen.</p>
 </section>
 <section>
 <h2>Aufnahme</h2>
 <p>Aufgenommen wird jedes Angebot, zu dem öffentlich zugängliche Informationen vorliegen. Als angekündigt gilt ein Angebot, sobald der Anbieter es öffentlich angekündigt hat. Die Aufnahme setzt keine Mitwirkung des Anbieters voraus.</p>
+<p>Angebote für Installateure werden aufgenommen, wenn der Anbieter sie öffentlich beschreibt und sie die Direktvermarktung einschließen oder vom Anbieter ausdrücklich in diesen Zusammenhang gestellt werden. Richtet sich ein Angebot zugleich an Installateure und an Energieversorger oder Hersteller, steht es bei den Installateuren.</p>
 </section>
 <section>
 <h2>Angaben und Quellen</h2>
@@ -951,6 +994,7 @@ function methodikseite() {
 <dl class="glossar">${Object.entries(GRUPPE).filter(([k]) => k !== 'unklar').map(([, g]) => `<div><dt>${esc(g.label)} <span class="meta">${esc(g.sortierung)}</span></dt><dd>${esc(g.text)}</dd></div>`).join('')}</dl>
 <p>In der Gruppe „Ohne weitere Produkte“ stehen die Angebote in der Reihenfolge ihrer ersten auffindbaren Veröffentlichung, in den übrigen Gruppen alphabetisch nach Anbieter. Die Reihenfolge ist keine Bewertung.</p>
 <p>Je Angebot zeigt die Übersicht den Status, die Einschränkungen (Kopplung, Leistungsgrenzen, weitere Bedingungen), das Vergütungsmodell und die Preisgestaltung. Die Preisgestaltung fasst zusammen, was Kundinnen und Kunden dem Anbieter zahlen; sie beruht ausschließlich auf Veröffentlichungen der Anbieter. Liegen zu Preisen nur Berichte der Fachpresse vor, steht die Angabe dezenter und mit dem Hinweis „laut Fachpresse“. Alle erfassten Angaben einschließlich Neu- oder Bestandsanlagen und Form der Direktvermarktung stehen in der <a href="${L('detailansicht')}">Detailansicht</a>, Wortlaut, Quellen und frühere Stände auf den Seiten der Angebote.</p>
+<p>Die Angebote für Installateure stehen in der Reihenfolge ihrer ersten auffindbaren Veröffentlichung im Zusammenhang mit der Direktvermarktung, die Angebote für Anbieter für Direktvermarktung alphabetisch. Die Beschreibungen geben knapp und möglichst nah am Wortlaut wieder, was die Quellen nennen; werbende Aussagen werden nicht übernommen. Beide Bereiche sind ergänzende Informationen und fließen nicht in die Kennzahlen der Startseite ein.</p>
 <p>Das Portal spricht keine Empfehlungen aus und vergibt keine Rangplätze oder Auszeichnungen, auch nicht gegen Entgelt. Anbieter haben keinen Einfluss auf den Inhalt der Angaben.</p>
 </section>
 <section>
@@ -1000,7 +1044,7 @@ function csv(zeilen, spalten) {
 function downloads() {
   const slug = (id) => angebotById[id]?.slug || '';
   const num = (v) => (v === null || v === undefined || v === '' ? null : Number(v));
-  const angebotZeilen = [...endkunden, ...dienstleister].map((a) => ({
+  const angebotZeilen = alleAngebote.map((a) => ({
     angebot: a.slug, name: a.name, organisation: a.organisation?.name, kategorie: a.kategorie_key, url: a.url,
     verfuegbarkeit: a.verf.key, gruppe: a.kategorie_key === 'endkunden' ? a.grp.key : null, erstmals_veroeffentlicht: a.erst || null, start_angekuendigt: einfach(a, 'start_angekuendigt').leer ? null : einfach(a, 'start_angekuendigt').text,
     aufgenommen_am: a.aufgenommen_am, datenstand: a.stand
@@ -1017,8 +1061,8 @@ function downloads() {
     gueltig_ab: x.gueltig_ab, quelle_url: x.quelle_url, startbestand: !!x.startbestand
   }));
   const anbieterZeilen = daten.organisation.map((o) => {
-    const eigene = [...endkunden, ...dienstleister].filter((a) => a.organisation_id === o.id);
-    return { anbieter: o.slug, name: o.name, rechtlicher_name: o.rechtlicher_name, website: o.website, angebote_endkunden: eigene.filter((a) => a.kategorie_key === 'endkunden').length, angebote_unternehmen: eigene.filter((a) => a.kategorie_key === 'dienstleister').length, angebote: eigene.map((a) => a.slug) };
+    const eigene = alleAngebote.filter((a) => a.organisation_id === o.id);
+    return { anbieter: o.slug, name: o.name, rechtlicher_name: o.rechtlicher_name, website: o.website, angebote_endkunden: eigene.filter((a) => a.kategorie_key === 'endkunden').length, angebote_installateure: eigene.filter((a) => a.kategorie_key === 'installateure').length, angebote_fuer_anbieter: eigene.filter((a) => a.kategorie_key === 'dienstleister').length, angebote: eigene.map((a) => a.slug) };
   }).filter((z) => z.angebote.length);
   const quellZeilen = daten.quelle.map((q) => ({ id: q.id, typ: q.typ, titel: q.titel, url: q.url, herausgeber: q.herausgeber, veroeffentlicht_am: q.veroeffentlicht_am, abgerufen_am: q.abgerufen_am, archiv_url: q.archiv_url }));
   const kalkZeilen = daten.kalkulator.map((k) => ({ id: k.id, angebot: slug(k.angebot_id), referenzfall: k.referenzfall_key, abgefragt_am: k.abgefragt_am, ergebnis: k.ergebnis_kurz, eingaben: JSON.stringify(k.eingaben), ergebnis_detail: JSON.stringify(k.ergebnis), aktuell: !ersetzteKalk.has(k.id), quelle_id: k.quelle_id }));
@@ -1029,7 +1073,7 @@ function downloads() {
     'angebote.csv': csv(angebotZeilen, ['angebot', 'name', 'organisation', 'kategorie', 'url', 'verfuegbarkeit', 'gruppe', 'erstmals_veroeffentlicht', 'start_angekuendigt', 'aufgenommen_am', 'datenstand']),
     'angaben.csv': csv(angabeZeilen, ['id', 'angebot', 'merkmal', 'status', 'wert', 'einheit', 'steuer', 'kwp_von', 'kwp_bis', 'netzgebiet', 'bedingung', 'gueltig_ab', 'gueltig_bis', 'aktuell', 'erfasst_am', 'quelle_id']),
     'aenderungen.csv': csv(protokollZeilen, ['id', 'erfasst_am', 'angebot', 'merkmal', 'aenderungsart', 'anlass', 'vorher', 'nachher', 'gueltig_ab', 'quelle_url', 'startbestand']),
-    'anbieter.csv': csv(anbieterZeilen, ['anbieter', 'name', 'rechtlicher_name', 'website', 'angebote_endkunden', 'angebote_unternehmen', 'angebote']),
+    'anbieter.csv': csv(anbieterZeilen, ['anbieter', 'name', 'rechtlicher_name', 'website', 'angebote_endkunden', 'angebote_installateure', 'angebote_fuer_anbieter', 'angebote']),
     'quellen.csv': csv(quellZeilen, ['id', 'typ', 'titel', 'url', 'herausgeber', 'veroeffentlicht_am', 'abgerufen_am', 'archiv_url']),
     'rechnerabfragen.csv': csv(kalkZeilen, ['id', 'angebot', 'referenzfall', 'abgefragt_am', 'ergebnis', 'eingaben', 'ergebnis_detail', 'aktuell', 'quelle_id']),
     'referenzfaelle.csv': csv(refZeilen, ['referenzfall', 'bezeichnung', 'kwp', 'spez_ertrag_kwh_kwp', 'eigenverbrauchsquote', 'erzeugung_kwh', 'einspeisung_kwh', 'gueltig_ab']),
@@ -1042,7 +1086,7 @@ function datenseite(dateien) {
   const tiefe = 1;
   const L = (z) => link(tiefe, z);
   const BESCHREIBUNG = {
-    'angebote.csv': 'Alle Angebote mit Kategorie, Gruppe, Verfügbarkeit und Datenstand',
+    'angebote.csv': 'Alle Angebote mit Bereich, Gruppe, Verfügbarkeit und Datenstand',
     'angaben.csv': 'Alle Angaben einschließlich früherer Stände, je Zeile ein Merkmal',
     'aenderungen.csv': 'Änderungsprotokoll mit Art, Anlass sowie vorherigem und neuem Wert',
     'quellen.csv': 'Quellen mit Abrufdatum',
@@ -1065,6 +1109,7 @@ ${liste}
 </tbody></table></div>
 <p class="meta">CSV mit Semikolon als Trennzeichen, Dezimalkomma und UTF-8. Mehrfachwerte sind durch senkrechte Striche getrennt. Datenstand ${datum(STAND)}.</p>
 <h2>Verknüpfung</h2>
+<p>Die Spalte <code>kategorie</code> in <code>angebote.csv</code> nennt den Bereich: <code>endkunden</code> (Angebote für Endkunden), <code>installateure</code> (Angebote für Installateure) und <code>dienstleister</code> (Angebote für Anbieter für Direktvermarktung).</p>
 <p>Angaben verweisen über <code>angebot</code> auf die Angebote und über <code>quelle_id</code> auf die Quellen. Bedeutung und Ausprägungen der Merkmale stehen in <code>merkmale.csv</code> und auf der Seite <a href="${L('methodik')}">Methodik</a>.</p>
 <h2>Quellenangabe</h2>
 <p>Bei Verwendung bitte angeben: ${esc(cfg.portalName)}, ${esc(cfg.betreiber.name)}, Datenstand ${datum(STAND)}, ${esc(cfg.siteUrl.replace('https://', ''))}.</p>
@@ -1138,7 +1183,7 @@ await fs.cp(path.join(ROOT, 'src'), path.join(OUT, 'assets'), { recursive: true 
 
 await schreibe('index.html', startseite());
 await schreibe('detailansicht/index.html', detailseite());
-for (const a of [...endkunden, ...dienstleister]) await schreibe(`angebote/${a.slug}/index.html`, angebotsseite(a));
+for (const a of alleAngebote) await schreibe(`angebote/${a.slug}/index.html`, angebotsseite(a));
 await schreibe('aenderungen/index.html', aenderungsseite());
 await schreibe('methodik/index.html', methodikseite());
 const dateien = downloads();
@@ -1151,7 +1196,7 @@ await schreibe('404.html', fehlerseite());
 const host = new URL(cfg.siteUrl).host;
 await schreibe('CNAME', host + '\n');
 await schreibe('robots.txt', VORSCHAU ? 'User-agent: *\nDisallow: /\n' : `User-agent: *\nAllow: /\nSitemap: ${cfg.siteUrl}/sitemap.xml\n`);
-const urls = ['', 'detailansicht/', 'aenderungen/', 'daten/', 'methodik/', 'impressum/', 'datenschutz/', ...[...endkunden, ...dienstleister].map((a) => `angebote/${a.slug}/`)];
+const urls = ['', 'detailansicht/', 'aenderungen/', 'daten/', 'methodik/', 'impressum/', 'datenschutz/', ...alleAngebote.map((a) => `angebote/${a.slug}/`)];
 await schreibe('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((u) => `  <url><loc>${cfg.siteUrl}/${u}</loc></url>`).join('\n')}\n</urlset>\n`);
 
-console.log(`Fertig: ${endkunden.length} Angebote, ${dienstleister.length} Dienstleister, Stand ${STAND}${VORSCHAU ? ' (VORSCHAU mit Entwürfen)' : ''} → ${path.relative(ROOT, OUT) || '.'}`);
+console.log(`Fertig: ${endkunden.length} Angebote für Endkunden, ${installateure.length} für Installateure, ${dienstleister.length} für Anbieter, Stand ${STAND}${VORSCHAU ? ' (VORSCHAU mit Entwürfen)' : ''} → ${path.relative(ROOT, OUT) || '.'}`);

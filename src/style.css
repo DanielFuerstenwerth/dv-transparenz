@@ -407,3 +407,22 @@ blockquote { margin: 6px 0 0; padding: 2px 0 2px 12px; border-left: 2px solid va
   .gruppe h2 { break-after: avoid; }
 }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+
+/* Angebote für Installateure: schlichte Liste, sortiert nach erster Veröffentlichung */
+.inst-liste { list-style: none; margin: 8px 0 0; padding: 0; max-width: 980px; }
+.inst-liste > li { padding: 16px 0 18px; border-top: 1px solid var(--linie); }
+.inst-liste > li:last-child { border-bottom: 1px solid var(--linie); }
+.inst-liste > li.entwurf { border-left: 3px solid var(--solargelb); padding-left: 12px; }
+.inst-liste p { margin: 0; font-size: var(--fs-tabelle); line-height: 1.5; }
+.inst-kopf { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; }
+.inst-kopf .anb { display: inline; font-size: 16px; }
+.inst-kopf a { color: var(--kobalt); text-decoration: none; }
+.inst-kopf a:hover { text-decoration: underline; }
+.inst-meta { margin-top: 4px !important; color: var(--blaugrau); font-size: 13px !important; }
+.inst-meta .trenner { color: var(--blaugrau); opacity: 0.6; }
+.inst-meta .unter { display: inline; }
+.inst-meta .unter::before { content: ", "; }
+.inst-text { margin-top: 8px !important; max-width: 90ch; }
+.inst-hinweis { margin-top: 6px !important; max-width: 90ch; color: var(--blaugrau); font-size: 13.5px !important; }
+.inst-hinweis .beleg { color: var(--blaugrau); }
+.inst-links { margin-top: 8px !important; display: flex; flex-wrap: wrap; gap: 4px 16px; font-family: var(--mono); font-size: 12.5px !important; }
