@@ -358,6 +358,7 @@ blockquote { margin: 6px 0 0; padding: 2px 0 2px 12px; border-left: 2px solid va
   .dvliste tbody th, .dvliste tbody td { border: 0; padding: 6px 0; }
   .dvliste td::before { content: attr(data-label); display: block; font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--blaugrau); margin-bottom: 3px; }
   .dvliste td.li { white-space: normal; }
+  .dvliste td.st { max-width: none; }
   .links { display: flex; flex-wrap: wrap; gap: 4px 16px; }
 }
 
