@@ -74,7 +74,7 @@ Die Übersicht gliedert Angebote für Endkunden nach dem Merkmal `kopplung` („
 | Werte in `kopplung` | Gruppe | Reihenfolge in der Gruppe |
 |---|---|---|
 | `keine` | Ohne weitere Produkte | nach `erstmals_veroeffentlicht` |
-| `stromtarif`, `messstellenbetrieb` oder `technik` | Gekoppelt an Stromtarif oder Technik | alphabetisch nach Anbieter |
+| `stromtarif`, `messstellenbetrieb` oder `technik` | Gekoppelt an Tarif, Messstellenbetrieb oder Technik | alphabetisch nach Anbieter |
 | enthält `hardware_anbieter` | Gekoppelt an Hardware des Anbieters | alphabetisch nach Anbieter |
 | fehlt | Kopplung noch nicht erfasst | alphabetisch |
 
@@ -86,6 +86,14 @@ Die Übersicht gliedert Angebote für Endkunden nach dem Merkmal `kopplung` („
 - `erstmals_veroeffentlicht`: Datum der ersten auffindbaren Ankündigung oder Veröffentlichung, mit Quelle.
 
 Die Merkmale `stromliefervertrag`, `zusatzhardware`, `speicher` und `anlage_vom_anbieter` werden weiter erfasst und stehen in der Detailansicht; sie bestimmen die Gruppe nicht mehr.
+
+## Anbieter und Angebote
+
+`organisation` enthält die Anbieter (Unternehmen), `angebot` deren Angebote (Produkte); ein Anbieter kann mehrere Angebote haben (etwa Octopus Energy: SolarUp und Zero Bills). Die Kennzahlen der Startseite zählen Anbieter, nicht Angebote. Marken stehen als eigener Anbieter mit dem rechtlichen Namen des Unternehmens (LUOX Energy, rechtlich Lumenaza GmbH). Übersicht in der Sicht `v_anbieter`.
+
+## Korrekturen des Startbestands
+
+Korrekturen an Angaben, die schon im Startbestand vom 16.10.2026 hätten richtig sein müssen, werden wie jede Korrektur fortgeschrieben, aber mit `startbestand = true` erfasst. Sie erscheinen nicht im Änderungsprotokoll der Website, bleiben aber in `aenderungen.csv` mit Kennzeichen enthalten. Nur auf ausdrückliche Vorgabe von Daniel.
 
 ## Preisgestaltung (seit 16.10.2026)
 

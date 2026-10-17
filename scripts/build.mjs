@@ -273,7 +273,7 @@ function einfach(angebot, key) {
 // Gruppe: ob die Direktvermarktung an weitere Produkte gekoppelt ist (Merkmal „kopplung“)
 const GRUPPE = {
   ohne: { rang: 1, label: 'Ohne weitere Produkte', sortierung: 'sortiert nach erster Veröffentlichung', text: 'Direktvermarktung ohne Stromtarif, Messstellenbetrieb oder Hardware des Anbieters.' },
-  tarif_technik: { rang: 2, label: 'Gekoppelt an Stromtarif oder Technik', sortierung: 'alphabetisch', text: 'Nur mit Stromtarif oder Messstellenbetrieb des Anbieters oder mit bestimmter Technik wie Speicher oder Energiemanager, die auch von Dritten stammen kann.' },
+  tarif_technik: { rang: 2, label: 'Gekoppelt an Tarif, Messstellenbetrieb oder Technik', sortierung: 'alphabetisch', text: 'Nur mit Stromtarif oder Messstellenbetrieb des Anbieters oder mit bestimmter Technik wie Speicher oder Energiemanager, die auch von Dritten stammen kann.' },
   hardware: { rang: 3, label: 'Gekoppelt an Hardware des Anbieters', sortierung: 'alphabetisch', text: 'Nur mit Anlage, Speicher oder Energiemanager des Anbieters oder seiner Partner.' },
   unklar: { rang: 4, label: 'Kopplung noch nicht erfasst', sortierung: 'alphabetisch', text: 'Zur Kopplung liegt noch keine Angabe vor.' }
 };
@@ -572,6 +572,10 @@ function linkZelle(a, L) {
   return `<ul class="links">${links.map((x) => `<li>${x}</li>`).join('')}</ul>`;
 }
 
+function anbieterAngebot(a, L) {
+  return `<span class="anb">${esc(a.organisation?.name || '')}</span><a href="${L('angebote/' + a.slug)}">${esc(a.name)}</a>${a.oeffentlich ? '' : '<span class="entwurf-marke">Entwurf</span>'}`;
+}
+
 function gruppenKopf(g) {
   return `<span class="gr-name">${esc(g.label)}</span><span class="gr-sort">${esc(g.sortierung)}</span>`;
 }
@@ -582,13 +586,16 @@ function gruppenKopf(g) {
 function startseite() {
   const tiefe = 0;
   const L = (z) => link(tiefe, z);
-  const buchbar = endkunden.filter((a) => a.verf.info?.gruppe === 'buchbar').length;
-  const angekuendigt = endkunden.filter((a) => a.verf.info?.gruppe === 'angekuendigt').length;
+  // Kennzahlen je Anbieter (Unternehmen), nicht je Angebot
+  const anbieterIds = [...new Set(endkunden.map((a) => a.organisation_id))];
+  const hatBuchbar = (id) => endkunden.some((a) => a.organisation_id === id && a.verf.info?.gruppe === 'buchbar');
+  const anbieterBuchbar = anbieterIds.filter(hatBuchbar).length;
+  const anbieterAngekuendigt = anbieterIds.filter((id) => !hatBuchbar(id) && endkunden.some((a) => a.organisation_id === id && a.verf.info?.gruppe === 'angekuendigt')).length;
 
   const gruppen = Object.keys(GRUPPE).map((key) => ({ key, g: GRUPPE[key], liste: endkunden.filter((a) => a.grp.key === key) })).filter((x) => x.liste.length);
   const zeilen = gruppen.map(({ g, liste }) => liste.map((a, i) => `<tr${a.oeffentlich ? '' : ' class="entwurf"'}>
   ${i === 0 ? `<th scope="rowgroup" rowspan="${liste.length}" class="gr">${gruppenKopf(g)}</th>` : ''}
-  <th scope="row" class="an"><a href="${L('angebote/' + a.slug)}">${esc(a.name)}</a><span class="unter">${esc(a.organisation?.name || '')}</span>${a.oeffentlich ? '' : '<span class="entwurf-marke">Entwurf</span>'}</th>
+  <th scope="row" class="an">${anbieterAngebot(a, L)}</th>
   <td data-label="Status" class="st">${statusZeile(a)}</td>
   <td data-label="Einschränkungen" class="ei">${einschraenkungen(a)}</td>
   <td data-label="Vergütungsmodell" class="vg">${textZelle(a, 'verguetungsmodell', { nurErsterSatz: true })}</td>
@@ -613,9 +620,9 @@ function startseite() {
     <h1>Wer bietet Direktvermarktung für Strom aus kleinen PV&#8209;Anlagen an?</h1>
     <p class="lead">Welche Angebote sind bereits angekündigt und ab wann?</p>
     <dl class="kennzahlen">
-      <div><dt>Angebote für Endkunden</dt><dd>${endkunden.length}</dd></div>
-      <div><dt>davon buchbar</dt><dd>${buchbar}</dd></div>
-      <div><dt>davon angekündigt</dt><dd>${angekuendigt}</dd></div>
+      <div><dt>Anbieter für Endkunden</dt><dd>${anbieterIds.length}</dd></div>
+      <div><dt>mit buchbarem Angebot</dt><dd>${anbieterBuchbar}</dd></div>
+      <div><dt>nur angekündigt</dt><dd>${anbieterAngekuendigt}</dd></div>
     </dl>
   </div>
 </section>
@@ -631,7 +638,7 @@ function startseite() {
     <div class="tabelle-rahmen">
       <table class="dvliste">
         <caption class="sr">Angebote für Endkunden nach Kopplung</caption>
-        <thead><tr><th scope="col">Kategorie</th><th scope="col">Angebot</th><th scope="col">Status</th><th scope="col">Einschränkungen</th><th scope="col">Vergütungsmodell</th><th scope="col">Preisgestaltung</th><th scope="col">Links</th></tr></thead>
+        <thead><tr><th scope="col">Kategorie</th><th scope="col">Anbieter &amp; Angebot</th><th scope="col">Status</th><th scope="col">Einschränkungen</th><th scope="col">Vergütungsmodell</th><th scope="col">Preisgestaltung</th><th scope="col">Links</th></tr></thead>
         <tbody>
 ${endkunden.length ? zeilen : '<tr><td colspan="7">Die ersten Einträge werden geprüft.</td></tr>'}
         </tbody>
@@ -688,14 +695,14 @@ const DETAIL_SPALTEN = [
 function detailseite() {
   const tiefe = 1;
   const L = (z) => link(tiefe, z);
-  const kopf = ['Angebot', 'Status', 'Anlagengröße', ...DETAIL_SPALTEN.map((x) => x.label), 'Anbieterrechner', 'Stand'];
+  const kopf = ['Anbieter & Angebot', 'Status', 'Anlagengröße', ...DETAIL_SPALTEN.map((x) => x.label), 'Anbieterrechner', 'Stand'];
   const gruppen = Object.keys(GRUPPE).map((key) => ({ g: GRUPPE[key], liste: endkunden.filter((a) => a.grp.key === key) })).filter((x) => x.liste.length);
   const zeilen = gruppen.map(({ g, liste }) => `<tr class="gr-zeile"><th scope="rowgroup" colspan="${kopf.length}"><span class="gr-innen">${gruppenKopf(g)}</span></th></tr>
 ${liste.map((a) => {
     const lmin = angabenVon(a, 'leistung_min_kwp'), lmax = angabenVon(a, 'leistung_max_kwp');
     const kalk = kalkNachAngebot[a.id] || [];
     return `<tr id="${esc(a.slug)}"${a.oeffentlich ? '' : ' class="entwurf"'}>
-  <th scope="row"><a href="${L('angebote/' + a.slug)}">${esc(a.name)}</a><span class="unter">${esc(a.organisation?.name || '')}</span>${a.oeffentlich ? '' : '<span class="entwurf-marke">Entwurf</span>'}</th>
+  <th scope="row" class="an">${anbieterAngebot(a, L)}</th>
   <td class="st">${statusZeile(a)}</td>
   <td class="zahl">${lmin.length || lmax.length ? beleg([...lmin, ...lmax], esc(leistungText(a))) : '<span class="leer">–</span>'}</td>
   ${DETAIL_SPALTEN.map((sp) => `<td${sp.breit ? ' class="breit"' : ''}>${alleWerte(a, sp.key) || '<span class="leer">–</span>'}</td>`).join('\n  ')}
@@ -850,14 +857,15 @@ function aenderungsseite() {
   const tiefe = 1;
   const L = (z) => link(tiefe, z);
   const eintraege = [];
-  const neu = group(daten.aenderungsprotokoll.filter((x) => x.aenderungsart === 'neu'), (x) => isoTag(x.erfasst_am) + '|' + x.angebot_id);
+  const protokoll = daten.aenderungsprotokoll.filter((x) => !x.startbestand);
+  const neu = group(protokoll.filter((x) => x.aenderungsart === 'neu'), (x) => isoTag(x.erfasst_am) + '|' + x.angebot_id);
   for (const [k, liste] of Object.entries(neu)) {
     const [tag, id] = k.split('|');
     const an = angebotById[id];
     const art = an && isoTag(an.aufgenommen_am) === tag ? 'Aufgenommen' : 'Ergänzt';
     eintraege.push({ tag, sort: tag + ' 0', art, html: `<a href="${L('angebote/' + (angebotById[id]?.slug || ''))}">${esc(liste[0].angebot_name)}</a> <span class="meta">${liste.length} ${liste.length === 1 ? 'Angabe' : 'Angaben'}</span>` });
   }
-  for (const x of daten.aenderungsprotokoll.filter((y) => y.aenderungsart !== 'neu')) {
+  for (const x of protokoll.filter((y) => y.aenderungsart !== 'neu')) {
     const m = merkmale[x.merkmal_key];
     const vorher = x.vorher_status ? wertText(x, m, 'vorher_') : '';
     const nachher = wertText(x, m);
@@ -1006,8 +1014,12 @@ function downloads() {
   const protokollZeilen = daten.aenderungsprotokoll.map((x) => ({
     id: x.id, erfasst_am: x.erfasst_am, angebot: x.angebot_slug, merkmal: x.merkmal_key, aenderungsart: x.aenderungsart, anlass: x.ausgeloest_durch,
     vorher: x.vorher_status ? wertText(x, merkmale[x.merkmal_key], 'vorher_') : null, nachher: wertText(x, merkmale[x.merkmal_key]),
-    gueltig_ab: x.gueltig_ab, quelle_url: x.quelle_url
+    gueltig_ab: x.gueltig_ab, quelle_url: x.quelle_url, startbestand: !!x.startbestand
   }));
+  const anbieterZeilen = daten.organisation.map((o) => {
+    const eigene = [...endkunden, ...dienstleister].filter((a) => a.organisation_id === o.id);
+    return { anbieter: o.slug, name: o.name, rechtlicher_name: o.rechtlicher_name, website: o.website, angebote_endkunden: eigene.filter((a) => a.kategorie_key === 'endkunden').length, angebote_unternehmen: eigene.filter((a) => a.kategorie_key === 'dienstleister').length, angebote: eigene.map((a) => a.slug) };
+  }).filter((z) => z.angebote.length);
   const quellZeilen = daten.quelle.map((q) => ({ id: q.id, typ: q.typ, titel: q.titel, url: q.url, herausgeber: q.herausgeber, veroeffentlicht_am: q.veroeffentlicht_am, abgerufen_am: q.abgerufen_am, archiv_url: q.archiv_url }));
   const kalkZeilen = daten.kalkulator.map((k) => ({ id: k.id, angebot: slug(k.angebot_id), referenzfall: k.referenzfall_key, abgefragt_am: k.abgefragt_am, ergebnis: k.ergebnis_kurz, eingaben: JSON.stringify(k.eingaben), ergebnis_detail: JSON.stringify(k.ergebnis), aktuell: !ersetzteKalk.has(k.id), quelle_id: k.quelle_id }));
   const refZeilen = daten.referenzfall.map((r) => ({ referenzfall: r.key, bezeichnung: r.bezeichnung, kwp: num(r.kwp), spez_ertrag_kwh_kwp: num(r.spez_ertrag_kwh_kwp), eigenverbrauchsquote: num(r.eigenverbrauchsquote), erzeugung_kwh: num(r.erzeugung_kwh), einspeisung_kwh: num(r.einspeisung_kwh), gueltig_ab: r.gueltig_ab }));
@@ -1016,12 +1028,13 @@ function downloads() {
   return {
     'angebote.csv': csv(angebotZeilen, ['angebot', 'name', 'organisation', 'kategorie', 'url', 'verfuegbarkeit', 'gruppe', 'erstmals_veroeffentlicht', 'start_angekuendigt', 'aufgenommen_am', 'datenstand']),
     'angaben.csv': csv(angabeZeilen, ['id', 'angebot', 'merkmal', 'status', 'wert', 'einheit', 'steuer', 'kwp_von', 'kwp_bis', 'netzgebiet', 'bedingung', 'gueltig_ab', 'gueltig_bis', 'aktuell', 'erfasst_am', 'quelle_id']),
-    'aenderungen.csv': csv(protokollZeilen, ['id', 'erfasst_am', 'angebot', 'merkmal', 'aenderungsart', 'anlass', 'vorher', 'nachher', 'gueltig_ab', 'quelle_url']),
+    'aenderungen.csv': csv(protokollZeilen, ['id', 'erfasst_am', 'angebot', 'merkmal', 'aenderungsart', 'anlass', 'vorher', 'nachher', 'gueltig_ab', 'quelle_url', 'startbestand']),
+    'anbieter.csv': csv(anbieterZeilen, ['anbieter', 'name', 'rechtlicher_name', 'website', 'angebote_endkunden', 'angebote_unternehmen', 'angebote']),
     'quellen.csv': csv(quellZeilen, ['id', 'typ', 'titel', 'url', 'herausgeber', 'veroeffentlicht_am', 'abgerufen_am', 'archiv_url']),
     'rechnerabfragen.csv': csv(kalkZeilen, ['id', 'angebot', 'referenzfall', 'abgefragt_am', 'ergebnis', 'eingaben', 'ergebnis_detail', 'aktuell', 'quelle_id']),
     'referenzfaelle.csv': csv(refZeilen, ['referenzfall', 'bezeichnung', 'kwp', 'spez_ertrag_kwh_kwp', 'eigenverbrauchsquote', 'erzeugung_kwh', 'einspeisung_kwh', 'gueltig_ab']),
     'merkmale.csv': csv(merkmalZeilen, ['merkmal', 'bezeichnung', 'gruppe', 'datentyp', 'einheit', 'definition', 'auspraegungen']),
-    'daten.json': JSON.stringify({ stand: STAND, herausgeber: cfg.betreiber.name, angebote: angebotZeilen, angaben: angabeZeilen, aenderungen: protokollZeilen, quellen: quellZeilen, rechnerabfragen: kalkZeilen, referenzfaelle: refZeilen, merkmale: merkmalZeilen }, null, 2)
+    'daten.json': JSON.stringify({ stand: STAND, herausgeber: cfg.betreiber.name, anbieter: anbieterZeilen, angebote: angebotZeilen, angaben: angabeZeilen, aenderungen: protokollZeilen, quellen: quellZeilen, rechnerabfragen: kalkZeilen, referenzfaelle: refZeilen, merkmale: merkmalZeilen }, null, 2)
   };
 }
 
@@ -1036,6 +1049,7 @@ function datenseite(dateien) {
     'rechnerabfragen.csv': 'Ergebnisse der Anbieterrechner für die Referenzfälle',
     'referenzfaelle.csv': 'Definition der Referenzfälle',
     'merkmale.csv': 'Definition aller Merkmale und Ausprägungen',
+    'anbieter.csv': 'Anbieter (Unternehmen) mit ihren Angeboten',
     'daten.json': 'Alle Tabellen in einer Datei'
   };
   const kb = (s) => `${zahl(Buffer.byteLength(s) / 1024, 0)} KB`;
