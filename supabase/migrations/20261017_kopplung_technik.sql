@@ -1,4 +1,4 @@
--- NOCH NICHT ANGEWENDET (Änderung am Merkmalskatalog wurde am 17.10.2026 nicht ausgeführt).
+-- Angewendet am 17.10.2026 (Supabase-Migration kopplung_technik_keine_kopplung).
 -- Merkmal „kopplung“: „Technik“ ist seit 17.10.2026 keine Kopplung mehr (Vorgabe Daniel).
 -- Die Website blendet die Ausprägung bereits aus (VERALTET in scripts/build.mjs);
 -- die Angaben zu Octopus SolarUp, Rabot Energy und Tibber sind bereits als Korrektur fortgeschrieben.
