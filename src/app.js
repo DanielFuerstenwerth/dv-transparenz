@@ -44,6 +44,7 @@
     offen = b;
     b.setAttribute('aria-expanded', 'true');
     b.setAttribute('aria-describedby', 'beleg-tipp');
+    b.dispatchEvent(new CustomEvent('beleg-gezeigt', { bubbles: true }));
   }
   function verstecke() { tipp.hidden = true; if (offen) offen.removeAttribute('aria-expanded'); offen = null; }
   document.addEventListener('pointerover', function (e) {
@@ -68,4 +69,46 @@
   window.addEventListener('resize', function () { if (offen) zeige(offen); });
   var rahmen = document.querySelectorAll('.tabelle-rahmen');
   for (var i = 0; i < rahmen.length; i++) rahmen[i].addEventListener('scroll', verstecke, { passive: true });
+})();
+
+// Reichweitenmessung: zählt Ereignisse, keine Personen (nur wenn Umami geladen ist)
+(function () {
+  function zaehle(name, daten) {
+    try { if (window.umami && typeof window.umami.track === 'function') window.umami.track(name, daten); } catch (e) { /* Messung darf die Seite nie stören */ }
+  }
+  var pfad = location.pathname;
+  window.addEventListener('load', function () {
+    var m = pfad.match(/\/angebote\/([^\/]+)\/?/);
+    if (m) zaehle('angebotsseite', { angebot: decodeURIComponent(m[1]) });
+    else if (/\/detailansicht\/?/.test(pfad)) zaehle('detailansicht');
+  });
+  var gezaehlt = {};
+  document.addEventListener('beleg-gezeigt', function (e) {
+    var b = e.target, d = b.dataset;
+    if (!d.angebot || !d.merkmal) return;
+    var k = d.angebot + '|' + d.merkmal;
+    if (gezaehlt[k]) return;
+    setTimeout(function () {
+      if (gezaehlt[k] || b.getAttribute('aria-expanded') !== 'true') return;
+      gezaehlt[k] = true;
+      zaehle('quelle-angesehen', { angebot: d.angebot, merkmal: d.merkmal });
+    }, 600);
+  });
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a');
+    if (!a) return;
+    var d = a.dataset;
+    if (d.ev) {
+      var daten = {};
+      if (d.angebot) daten.angebot = d.angebot;
+      if (d.ort) daten.ort = d.ort;
+      if (d.typ) daten.typ = d.typ;
+      zaehle(d.ev, daten);
+    } else if (a.hasAttribute('download')) {
+      zaehle('download', { datei: (a.getAttribute('href') || '').split('/').pop() });
+    } else if (a.closest('#beleg-tipp')) {
+      var o = document.querySelector('.beleg[aria-expanded="true"]');
+      zaehle('quelle-link', { angebot: o ? o.dataset.angebot : '', ort: 'quellenanzeige' });
+    }
+  });
 })();

@@ -211,6 +211,9 @@ const QUELLTYP = {
 };
 const SEKUNDAER = new Set(['medienbericht']);
 
+// Zählmerkmale für Links (Reichweitenmessung, ohne Personenbezug)
+const ev = (name, angebot, extra = {}) => ` data-ev="${name}"${angebot ? ` data-angebot="${esc(angebot)}"` : ''}${Object.entries(extra).map(([k, v]) => v ? ` data-${k}="${esc(v)}"` : '').join('')}`;
+
 function beleg(angaben, inhalt, klasse = '') {
   const liste = (Array.isArray(angaben) ? angaben : [angaben]).filter((x) => x && x.quelle_id && quellen[x.quelle_id]);
   if (!liste.length) return `<span class="${klasse}">${inhalt}</span>`;
@@ -234,7 +237,9 @@ function beleg(angaben, inhalt, klasse = '') {
     'data-herausgeber': q.herausgeber || '',
     'data-datum': [q.veroeffentlicht_am ? 'veröffentlicht ' + datum(q.veroeffentlicht_am) : '', q.abgerufen_am ? 'abgerufen ' + datum(q.abgerufen_am) : ''].filter(Boolean).join(' · '),
     'data-wortlaut': a.originalwortlaut || '',
-    'data-zusatz': zusatz.join(' · ')
+    'data-zusatz': zusatz.join(' · '),
+    'data-angebot': angebotById[a.angebot_id]?.slug || '',
+    'data-merkmal': a.merkmal_key || ''
   };
   const attrs = Object.entries(attr).filter(([, v]) => v).map(([k, v]) => `${k}="${esc(v)}"`).join(' ');
   return `<span class="beleg${SEKUNDAER.has(q.typ) ? ' sekundaer' : ''}${klasse ? ' ' + klasse : ''}" tabindex="0" ${attrs}>${inhalt}</span>`;
@@ -355,7 +360,7 @@ function seite({ tiefe, titel, beschreibung, kanonisch, aktiv, inhalt }) {
   const voll = titel ? `${titel} – ${cfg.portalName}` : cfg.portalName;
   const url = cfg.siteUrl + '/' + (kanonisch ? kanonisch + '/' : '');
   const umami = cfg.umami?.websiteId
-    ? `<script defer src="${esc(cfg.umami.scriptUrl)}" data-website-id="${esc(cfg.umami.websiteId)}" data-do-not-track="true"></script>`
+    ? `<script defer src="${esc(cfg.umami.scriptUrl)}" data-website-id="${esc(cfg.umami.websiteId)}" data-domains="${esc(new URL(cfg.siteUrl).host)}" data-do-not-track="true"></script>`
     : '';
   return `<!doctype html>
 <html lang="de">
@@ -583,9 +588,9 @@ function quellLinks(a) {
 function linkZelle(a, L) {
   const nachTyp = quellLinks(a);
   const links = [];
-  if (a.url) links.push(`<a class="extern" href="${esc(a.url)}" rel="noopener" target="_blank">Anbieter</a>`);
+  if (a.url) links.push(`<a class="extern" href="${esc(a.url)}" rel="noopener" target="_blank"${ev('anbieter-link', a.slug, { ort: 'uebersicht' })}>Anbieter</a>`);
   for (const [typ, label] of [['agb', 'AGB'], ['preisblatt', 'Preisblatt'], ['kalkulator', 'Rechner']]) {
-    (nachTyp[typ] || []).forEach((q, i, arr) => links.push(`<a class="extern" href="${esc(q.url)}" rel="noopener" target="_blank" title="${esc(q.titel)}">${label}${arr.length > 1 ? ' ' + (i + 1) : ''}</a>`));
+    (nachTyp[typ] || []).forEach((q, i, arr) => links.push(`<a class="extern" href="${esc(q.url)}" rel="noopener" target="_blank" title="${esc(q.titel)}"${ev('quelle-link', a.slug, { ort: 'uebersicht', typ })}>${label}${arr.length > 1 ? ' ' + (i + 1) : ''}</a>`));
   }
   links.push(`<a href="${L('angebote/' + a.slug)}">Quellen &amp; Verlauf</a>`);
   return `<ul class="links">${links.map((x) => `<li>${x}</li>`).join('')}</ul>`;
@@ -647,7 +652,7 @@ function startseite() {
   <p class="inst-meta">${meta}</p>
   <p class="inst-text">${nurFachpresse(umfang) ? INDIREKT_MARKE : ''}${umfang.length ? beleg(umfang, esc(umfang[0].wert_text)) : esc(a.kurzbeschreibung || '')}</p>
   ${hinw.length ? `<p class="inst-hinweis">${nurFachpresse(hinw) ? INDIREKT_MARKE : ''}${beleg(hinw, esc(hinw[0].wert_text))}</p>` : ''}
-  <p class="inst-links">${a.url ? `<a class="extern" href="${esc(a.url)}" rel="noopener" target="_blank">${urlText}</a>` : ''}<a href="${L('angebote/' + a.slug)}">Quellen &amp; Verlauf</a></p>
+  <p class="inst-links">${a.url ? `<a class="extern" href="${esc(a.url)}" rel="noopener" target="_blank"${ev('anbieter-link', a.slug, { ort: 'uebersicht' })}>${urlText}</a>` : ''}<a href="${L('angebote/' + a.slug)}">Quellen &amp; Verlauf</a></p>
 </li>`;
   }).join('\n');
 
@@ -861,7 +866,7 @@ ${bez.map((b) => {
   const quellenHtml = nummern.size ? `<section class="gruppe" id="quellen"><h2>Quellen</h2><ol class="quellen">
 ${[...nummern.entries()].map(([id, n]) => {
     const q = quellen[id] || {};
-    const titel = q.url ? `<a href="${esc(q.url)}" rel="noopener" target="_blank">${esc(q.titel)}</a>` : esc(q.titel || 'Quelle');
+    const titel = q.url ? `<a href="${esc(q.url)}" rel="noopener" target="_blank"${ev('quelle-link', a.slug, { ort: 'angebotsseite', typ: q.typ })}>${esc(q.titel)}</a>` : esc(q.titel || 'Quelle');
     const teile = [q.typ === 'anbieterauskunft' ? 'Mitteilung des Anbieters an das Portal' : '', q.herausgeber, q.veroeffentlicht_am ? 'veröffentlicht ' + datum(q.veroeffentlicht_am) : '', q.abgerufen_am ? 'abgerufen ' + datum(q.abgerufen_am) : ''].filter(Boolean).join(' · ');
     const archiv = q.archiv_url ? ` · <a href="${esc(q.archiv_url)}" rel="noopener" target="_blank">Archivkopie</a>` : '';
     return `<li id="quelle-${n}" value="${n}">${titel}<span class="meta">${esc(teile)}${archiv}</span></li>`;
@@ -877,7 +882,7 @@ ${[...nummern.entries()].map(([id, n]) => {
     <div class="kopfzeile">
       ${statusChip(a.verf)}
       ${a.kategorie_key === 'endkunden' ? `<span class="zugang-marke">${a.grp.angabe ? beleg([a.grp.angabe], esc(a.grp.label)) : esc(a.grp.label)}</span>` : ''}
-      ${a.url ? `<a class="extern" href="${esc(a.url)}" rel="noopener" target="_blank">Website des Anbieters</a>` : ''}
+      ${a.url ? `<a class="extern" href="${esc(a.url)}" rel="noopener" target="_blank"${ev('anbieter-link', a.slug, { ort: 'angebotsseite' })}>Website des Anbieters</a>` : ''}
       <span class="meta">Datenstand ${datum(a.stand) || '–'}</span>
     </div>
   </div>
@@ -1162,7 +1167,7 @@ function datenschutz() {
   const b = cfg.betreiber;
   const umami = cfg.umami?.websiteId ? `
 <h2>Reichweitenmessung</h2>
-<p>Zur Messung der Seitenaufrufe nutzt das Portal Umami (Umami Software, Inc.). Umami setzt keine Cookies und speichert keine IP-Adressen. Erfasst werden aufgerufene Seite, verweisende Seite, Browser, Betriebssystem, Gerätetyp und Land in zusammengefasster Form. Ein Personenbezug wird nicht hergestellt. Die Verarbeitung beruht auf Art. 6 Abs. 1 lit. f DSGVO; das berechtigte Interesse liegt in der Kenntnis der Nutzung des Portals. Ist im Browser „Do Not Track“ aktiviert, findet keine Messung statt.</p>` : '';
+<p>Zur Messung der Seitenaufrufe nutzt das Portal Umami (Umami Software, Inc.). Umami setzt keine Cookies und speichert keine IP-Adressen. Erfasst werden aufgerufene Seite, verweisende Seite, Browser, Betriebssystem, Gerätetyp und Land in zusammengefasster Form. Zusätzlich wird gezählt, welche Quellenangaben aufgeklappt, welche Detail- und Angebotsseiten aufgerufen und welche Links zu Anbietern, Quellen und Downloads angeklickt werden. Diese Ereignisse werden nur zusammengefasst ausgewertet und keiner einzelnen Person zugeordnet; es werden keine Kennungen im Browser gespeichert. Ein Personenbezug wird nicht hergestellt. Die Verarbeitung beruht auf Art. 6 Abs. 1 lit. f DSGVO; das berechtigte Interesse liegt in der Kenntnis der Nutzung des Portals. Ist im Browser „Do Not Track“ aktiviert, findet keine Messung statt.</p>` : '';
   const inhalt = `
 <section class="auftakt auftakt-klein"><div class="rahmen"><h1>Datenschutz</h1></div></section>
 <div class="rahmen schmal detail text">
@@ -1170,7 +1175,7 @@ function datenschutz() {
 <p>${esc(b.name)}, ${esc(b.strasse)}, ${esc(b.ort)}, E-Mail: <a href="mailto:${esc(cfg.kontaktEmail)}">${esc(cfg.kontaktEmail)}</a></p>
 <h2>Bereitstellung der Website</h2>
 <p>Die Website wird über GitHub Pages (GitHub, Inc., USA) ausgeliefert. Beim Aufruf verarbeitet der Hoster technisch notwendige Daten, insbesondere IP-Adresse, Zeitpunkt, aufgerufene Seite und Browserangaben, um die Seite auszuliefern und die Sicherheit des Betriebs zu gewährleisten. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO. GitHub ist nach dem EU-US Data Privacy Framework zertifiziert.</p>
-<p>Schriften und alle weiteren Bestandteile der Seite werden vom selben Server geladen. Das Portal setzt keine Cookies.</p>
+<p>Schriften und alle weiteren Bestandteile der Seite werden vom selben Server geladen${cfg.umami?.websiteId ? ', mit Ausnahme des Skripts der Reichweitenmessung' : ''}. Das Portal setzt keine Cookies.</p>
 ${umami}
 <h2>Kontakt per E-Mail</h2>
 <p>Wer Hinweise oder Anfragen per E-Mail sendet, übermittelt Name, E-Mail-Adresse und Inhalt der Nachricht. Diese Daten werden zur Bearbeitung verwendet, Art. 6 Abs. 1 lit. f DSGVO, und gelöscht, sobald sie dafür nicht mehr erforderlich sind und keine Aufbewahrungspflichten bestehen. Personenbezogene Daten aus Hinweisen werden nicht im Portal veröffentlicht.</p>
