@@ -74,11 +74,11 @@ Die Übersicht gliedert Angebote für Endkunden nach dem Merkmal `kopplung` („
 | Werte in `kopplung` | Gruppe | Reihenfolge in der Gruppe |
 |---|---|---|
 | `keine` | Ohne weitere Produkte | nach `erstmals_veroeffentlicht` |
-| `stromtarif`, `messstellenbetrieb` oder `technik` | Gekoppelt an Tarif, Messstellenbetrieb oder Technik | alphabetisch nach Anbieter |
+| `stromtarif` und/oder `messstellenbetrieb` | Gekoppelt an Stromtarif und/oder Messstellenbetrieb (seit 17.10.2026; vorher „Tarif, Messstellenbetrieb oder Technik“) | alphabetisch nach Anbieter |
 | enthält `hardware_anbieter` | Gekoppelt an Hardware des Anbieters | alphabetisch nach Anbieter |
 | fehlt | Kopplung noch nicht erfasst | alphabetisch |
 
-- `technik`: bestimmte Technik wie Speicher oder Energiemanager, die auch von Dritten stammen kann, sofern kompatibel.
+- `technik` wird seit 17.10.2026 nicht mehr vergeben (Vorgabe Daniel): Technische Voraussetzungen, die Geräte beliebiger Hersteller erfüllen können (etwa Batteriespeicher oder kompatibles Energiemanagement), sind keine Kopplung. Sie stehen nur in `bedingung` und erscheinen in der Liste unter „nur mit …“. Verlangt ein Angebot nur solche Technik, ist die Kopplung `keine`.
 - `hardware_anbieter`: Anlage, Speicher oder Energiemanager des Anbieters oder seiner Partner.
 - Ein intelligentes Messsystem eines beliebigen Messstellenbetreibers zählt nicht als Kopplung; `messstellenbetrieb` nur, wenn der Messstellenbetrieb über den Anbieter laufen muss.
 - Ist die Kopplung nicht eindeutig belegt, `status = 'unklar'` mit den wahrscheinlichen Werten in `wert_auswahl` und Begründung in `anmerkung`; die Liste markiert das mit „unklar“.

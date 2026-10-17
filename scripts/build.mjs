@@ -166,7 +166,13 @@ function rohwert(a, m) {
 // Wert ohne Geltungsbereich, für Tabellen und Verlauf
 function wertText(a, m, praefix = '') {
   const status = a[praefix + 'status'] ?? a.status;
-  if (status && status !== 'veroeffentlicht') return STATUS_ANGABE[status] || status;
+  if (status && status !== 'veroeffentlicht') {
+    const label = STATUS_ANGABE[status] || status;
+    const aus = a[praefix + 'wert_auswahl'];
+    // „unklar“ mit wahrscheinlichen Werten: die Werte mit anzeigen
+    if (status === 'unklar' && Array.isArray(aus) && aus.length && m) return `${label}: ${aus.map((k) => optionLabel(m, k)).join(', ')}`;
+    return label;
+  }
   const einheit = a.einheit ?? m?.einheit;
   switch (m?.datentyp) {
     case 'zahl': {
@@ -273,10 +279,13 @@ function einfach(angebot, key) {
 // Gruppe: ob die Direktvermarktung an weitere Produkte gekoppelt ist (Merkmal „kopplung“)
 const GRUPPE = {
   ohne: { rang: 1, label: 'Ohne weitere Produkte', sortierung: 'sortiert nach erster Veröffentlichung', text: 'Direktvermarktung ohne Stromtarif, Messstellenbetrieb oder Hardware des Anbieters.' },
-  tarif_technik: { rang: 2, label: 'Gekoppelt an Tarif, Messstellenbetrieb oder Technik', sortierung: 'alphabetisch', text: 'Nur mit Stromtarif oder Messstellenbetrieb des Anbieters oder mit bestimmter Technik wie Speicher oder Energiemanager, die auch von Dritten stammen kann.' },
+  tarif_messstelle: { rang: 2, label: 'Gekoppelt an Stromtarif und/oder Messstellenbetrieb', sortierung: 'alphabetisch', text: 'Nur mit Stromtarif und/oder Messstellenbetrieb des Anbieters. Technische Voraussetzungen, die Geräte beliebiger Hersteller erfüllen können, etwa ein Batteriespeicher, stehen unter den Einschränkungen.' },
   hardware: { rang: 3, label: 'Gekoppelt an Hardware des Anbieters', sortierung: 'alphabetisch', text: 'Nur mit Anlage, Speicher oder Energiemanager des Anbieters oder seiner Partner.' },
   unklar: { rang: 4, label: 'Kopplung noch nicht erfasst', sortierung: 'alphabetisch', text: 'Zur Kopplung liegt noch keine Angabe vor.' }
 };
+
+// Ausprägungen, die nicht mehr vergeben werden (frühere Angaben behalten sie im Verlauf)
+const VERALTET = { kopplung: ['technik'] };
 
 function gruppe(angebot) {
   const liste = angabenVon(angebot, 'kopplung');
@@ -284,7 +293,7 @@ function gruppe(angebot) {
   const w = a?.wert_auswahl || [];
   let key = 'unklar';
   if (w.includes('hardware_anbieter')) key = 'hardware';
-  else if (w.some((k) => ['stromtarif', 'messstellenbetrieb', 'technik'].includes(k))) key = 'tarif_technik';
+  else if (w.some((k) => ['stromtarif', 'messstellenbetrieb'].includes(k))) key = 'tarif_messstelle';
   else if (w.includes('keine')) key = 'ohne';
   return { key, ...GRUPPE[key], angabe: a, unsicher: !!a && a.status !== 'veroeffentlicht' };
 }
@@ -970,7 +979,7 @@ function methodikseite() {
   const glossar = GRUPPEN_REIHENFOLGE.map((g) => {
     const ms = daten.merkmal.filter((m) => m.gruppe === g && m.aktiv);
     if (!ms.length) return '';
-    return `<h3>${esc(g)}</h3><dl class="glossar">${ms.map((m) => `<div><dt>${esc(m.bezeichnung)}${m.einheit ? ` <span class="meta">${esc(m.einheit)}</span>` : ''}</dt><dd>${esc(m.definition)}${m.optionen ? `<span class="meta">Ausprägungen: ${m.optionen.map((o) => esc(o.bezeichnung)).join(', ')}</span>` : ''}</dd></div>`).join('')}</dl>`;
+    return `<h3>${esc(g)}</h3><dl class="glossar">${ms.map((m) => `<div><dt>${esc(m.bezeichnung)}${m.einheit ? ` <span class="meta">${esc(m.einheit)}</span>` : ''}</dt><dd>${esc(m.definition)}${m.optionen ? `<span class="meta">Ausprägungen: ${m.optionen.filter((o) => !(VERALTET[m.key] || []).includes(o.key)).map((o) => esc(o.bezeichnung)).join(', ')}</span>` : ''}</dd></div>`).join('')}</dl>`;
   }).join('\n');
   const versionen = (cfg.methodikVersionen || []).map((v) => `<li><span class="zahl">${datum(v.datum)}</span> ${esc(v.text)}</li>`).join('');
 
@@ -999,7 +1008,7 @@ function methodikseite() {
 </section>
 <section>
 <h2>Darstellung und Reihenfolge</h2>
-<p>Die Übersicht gliedert die Angebote für Endkunden danach, ob die Direktvermarktung an weitere Produkte gekoppelt ist (Merkmal „Gekoppelt an“). Ein intelligentes Messsystem ist für die Direktvermarktung fast immer erforderlich und zählt nicht als Kopplung, solange es von einem beliebigen Messstellenbetreiber stammen kann. Ist ein Angebot an Hardware des Anbieters gekoppelt, steht es in der dritten Gruppe, auch wenn zusätzlich ein Stromtarif erforderlich ist.</p>
+<p>Die Übersicht gliedert die Angebote für Endkunden danach, ob die Direktvermarktung an weitere Produkte gekoppelt ist (Merkmal „Gekoppelt an“). Ein intelligentes Messsystem ist für die Direktvermarktung fast immer erforderlich und zählt nicht als Kopplung, solange es von einem beliebigen Messstellenbetreiber stammen kann. Ist ein Angebot an Hardware des Anbieters gekoppelt, steht es in der dritten Gruppe, auch wenn zusätzlich ein Stromtarif erforderlich ist. Technische Voraussetzungen, die Geräte beliebiger Hersteller erfüllen können, etwa ein Batteriespeicher oder ein kompatibles Energiemanagement, sind keine Kopplung; sie stehen bei den Einschränkungen unter „nur mit“.</p>
 <dl class="glossar">${Object.entries(GRUPPE).filter(([k]) => k !== 'unklar').map(([, g]) => `<div><dt>${esc(g.label)} <span class="meta">${esc(g.sortierung)}</span></dt><dd>${esc(g.text)}</dd></div>`).join('')}</dl>
 <p>In der Gruppe „Ohne weitere Produkte“ stehen die Angebote in der Reihenfolge ihrer ersten auffindbaren Veröffentlichung, in den übrigen Gruppen alphabetisch nach Anbieter. Die Reihenfolge ist keine Bewertung.</p>
 <p>Je Angebot zeigt die Übersicht den Status, die Einschränkungen (Kopplung, Leistungsgrenzen, weitere Bedingungen), das Vergütungsmodell und die Preisgestaltung. Die Preisgestaltung fasst zusammen, was Kundinnen und Kunden dem Anbieter zahlen; sie beruht ausschließlich auf Veröffentlichungen der Anbieter. Liegen zu Preisen nur Berichte der Fachpresse vor, steht die Angabe dezenter und mit dem Hinweis „laut Fachpresse“. Alle erfassten Angaben einschließlich Neu- oder Bestandsanlagen und Form der Direktvermarktung stehen in der <a href="${L('detailansicht')}">Detailansicht</a>, Wortlaut, Quellen und frühere Stände auf den Seiten der Angebote.</p>
