@@ -887,7 +887,7 @@ ${quellenHtml}
     tiefe, titel: a.name, kanonisch: 'angebote/' + a.slug, aktiv: 'start', inhalt,
     beschreibung: a.kategorie_key === 'endkunden'
       ? `${a.name} (${a.organisation?.name || ''}): Verfügbarkeit, Voraussetzungen und Kosten der Direktvermarktung mit Quellen.`
-      : `${a.name} (${a.organisation?.name || ''}): ${BEREICH[a.kategorie_key] || 'Angebot'} im Zusammenhang mit der Direktvermarktung, mit Quellen.`
+      : `${a.name} (${a.organisation?.name || ''}): ${a.kategorie_key === 'installateure' ? 'Angebot für Installateure im Zusammenhang mit der Direktvermarktung' : 'Plattform oder Dienstleistung für Anbieter von Direktvermarktung'}, mit Quellen.`
   });
 }
 
