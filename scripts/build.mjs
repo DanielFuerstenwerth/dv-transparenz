@@ -897,6 +897,15 @@ ${quellenHtml}
 function aenderungsseite() {
   const tiefe = 1;
   const L = (z) => link(tiefe, z);
+  // Anbieter vor dem Angebot nennen, sofern der Name ihn nicht schon enthält; Bereich, wenn nicht Endkunden
+  const anzeige = (id, nameFallback) => {
+    const an = angebotById[id];
+    const name = an?.name || nameFallback || '';
+    const org = an?.organisation?.name || '';
+    const mitOrg = org && !name.toLowerCase().startsWith(org.toLowerCase()) ? `${org} · ${name}` : name;
+    const bereich = an && an.kategorie_key !== 'endkunden' ? ` <span class="meta-inline">${esc(BEREICH[an.kategorie_key] || '')}</span>` : '';
+    return `<a href="${L('angebote/' + (an?.slug || ''))}">${esc(mitOrg)}</a>${bereich}`;
+  };
   const eintraege = [];
   const protokoll = daten.aenderungsprotokoll.filter((x) => !x.startbestand);
   const neu = group(protokoll.filter((x) => x.aenderungsart === 'neu'), (x) => isoTag(x.erfasst_am) + '|' + x.angebot_id);
@@ -904,7 +913,7 @@ function aenderungsseite() {
     const [tag, id] = k.split('|');
     const an = angebotById[id];
     const art = an && isoTag(an.aufgenommen_am) === tag ? 'Aufgenommen' : 'Ergänzt';
-    eintraege.push({ tag, sort: tag + ' 0', art, html: `<a href="${L('angebote/' + (angebotById[id]?.slug || ''))}">${esc(liste[0].angebot_name)}</a> <span class="meta">${liste.length} ${liste.length === 1 ? 'Angabe' : 'Angaben'}</span>` });
+    eintraege.push({ tag, sort: tag + ' 0', art, html: `${anzeige(id, liste[0].angebot_name)} <span class="meta">${liste.length} ${liste.length === 1 ? 'Angabe' : 'Angaben'}</span>` });
   }
   for (const x of protokoll.filter((y) => y.aenderungsart !== 'neu')) {
     const m = merkmale[x.merkmal_key];
@@ -913,7 +922,7 @@ function aenderungsseite() {
     const g2 = geltung(x);
     eintraege.push({
       tag: isoTag(x.erfasst_am), sort: x.erfasst_am, art: AENDERUNGSART[x.aenderungsart],
-      html: `<a href="${L('angebote/' + x.angebot_slug)}">${esc(x.angebot_name)}</a> · ${esc(x.merkmal_bezeichnung)}: ${vorher ? `<del>${esc(vorher)}</del> → ` : ''}<ins>${esc(nachher)}</ins>${g2 ? ` <span class="geltung">${esc(g2)}</span>` : ''}${x.gueltig_ab && x.aenderungsart === 'aenderung_anbieter' ? ` <span class="meta">gültig ab ${datum(x.gueltig_ab)}</span>` : ''}<span class="meta">Anlass: ${esc(ANLASS[x.ausgeloest_durch] || x.ausgeloest_durch)}${x.quelle_url ? ` · <a href="${esc(x.quelle_url)}" rel="noopener" target="_blank">Quelle</a>` : ''}${x.anmerkung ? ' · ' + esc(x.anmerkung) : ''}</span>`
+      html: `${anzeige(x.angebot_id, x.angebot_name)} · ${esc(x.merkmal_bezeichnung)}: ${vorher ? `<del>${esc(vorher)}</del> → ` : ''}<ins>${esc(nachher)}</ins>${g2 ? ` <span class="geltung">${esc(g2)}</span>` : ''}${x.gueltig_ab && x.aenderungsart === 'aenderung_anbieter' ? ` <span class="meta">gültig ab ${datum(x.gueltig_ab)}</span>` : ''}<span class="meta">Anlass: ${esc(ANLASS[x.ausgeloest_durch] || x.ausgeloest_durch)}${x.quelle_url ? ` · <a href="${esc(x.quelle_url)}" rel="noopener" target="_blank">Quelle</a>` : ''}${x.anmerkung ? ' · ' + esc(x.anmerkung) : ''}</span>`
     });
   }
   for (const k of daten.kalkulator) {
