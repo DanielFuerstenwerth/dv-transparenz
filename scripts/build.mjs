@@ -853,7 +853,9 @@ function aenderungsseite() {
   const neu = group(daten.aenderungsprotokoll.filter((x) => x.aenderungsart === 'neu'), (x) => isoTag(x.erfasst_am) + '|' + x.angebot_id);
   for (const [k, liste] of Object.entries(neu)) {
     const [tag, id] = k.split('|');
-    eintraege.push({ tag, sort: tag + ' 0', art: 'Aufgenommen', html: `<a href="${L('angebote/' + (angebotById[id]?.slug || ''))}">${esc(liste[0].angebot_name)}</a> <span class="meta">${liste.length} ${liste.length === 1 ? 'Angabe' : 'Angaben'}</span>` });
+    const an = angebotById[id];
+    const art = an && isoTag(an.aufgenommen_am) === tag ? 'Aufgenommen' : 'Ergänzt';
+    eintraege.push({ tag, sort: tag + ' 0', art, html: `<a href="${L('angebote/' + (angebotById[id]?.slug || ''))}">${esc(liste[0].angebot_name)}</a> <span class="meta">${liste.length} ${liste.length === 1 ? 'Angabe' : 'Angaben'}</span>` });
   }
   for (const x of daten.aenderungsprotokoll.filter((y) => y.aenderungsart !== 'neu')) {
     const m = merkmale[x.merkmal_key];
@@ -869,6 +871,18 @@ function aenderungsseite() {
     const an = angebotById[k.angebot_id];
     if (!an) continue;
     eintraege.push({ tag: isoTag(k.erfasst_am), sort: k.erfasst_am, art: k.aenderungsart === 'korrektur' ? 'Korrektur Rechnerabfrage' : 'Rechnerabfrage', html: `<a href="${L('angebote/' + an.slug)}">${esc(an.name)}</a> · ${esc(referenzfaelle[k.referenzfall_key]?.bezeichnung || 'Eigene Eingaben')}: ${esc(k.ergebnis_kurz || '')} <span class="meta">abgefragt ${datum(k.abgefragt_am)}</span>` });
+  }
+  // Startbestand: alles bis einschließlich cfg.startbestandBis erscheint als ein Eintrag
+  const startBis = cfg.startbestandBis;
+  if (startBis) {
+    const vorher = eintraege.filter((e) => e.tag <= startBis);
+    if (vorher.length) {
+      const imStart = angebote.filter((a) => a.aufgenommen_am && isoTag(a.aufgenommen_am) <= startBis);
+      const ek = imStart.filter((a) => a.kategorie_key === 'endkunden').length;
+      const dl = imStart.filter((a) => a.kategorie_key === 'dienstleister').length;
+      for (let i = eintraege.length - 1; i >= 0; i--) if (eintraege[i].tag <= startBis) eintraege.splice(i, 1);
+      eintraege.push({ tag: startBis, sort: startBis + ' 0', art: 'Startbestand', html: `Erste Veröffentlichung mit ${ek} Angeboten für Endkunden und ${dl} für Unternehmen. Änderungen werden ab dem Folgetag einzeln dokumentiert; Bearbeitungsstände vor der Veröffentlichung stehen in der Datei <a href="${L('daten/aenderungen.csv')}">aenderungen.csv</a>.` });
+    }
   }
   eintraege.sort((a, b) => String(b.sort).localeCompare(String(a.sort)));
   const nachTag = group(eintraege, (e) => e.tag);
@@ -933,7 +947,7 @@ function methodikseite() {
 </section>
 <section>
 <h2>Änderungen und Korrekturen</h2>
-<p>Angaben werden nicht überschrieben, sondern fortgeschrieben. Das <a href="${L('aenderungen')}">Änderungsprotokoll</a> unterscheidet Änderungen durch den Anbieter, die ab einem bestimmten Datum gelten, von Korrekturen und Präzisierungen durch das Portal.</p>
+<p>Angaben werden nicht überschrieben, sondern fortgeschrieben. Das <a href="${L('aenderungen')}">Änderungsprotokoll</a> unterscheidet Änderungen durch den Anbieter, die ab einem bestimmten Datum gelten, von Korrekturen und Präzisierungen durch das Portal. Der Startbestand vom ${datum(cfg.startbestandBis || '')} erscheint dort als ein Eintrag; seitdem wird jede Änderung mit Datum einzeln aufgeführt.</p>
 <p>Hinweise von Anbietern, Nutzerinnen und Nutzern oder Dritten bitte mit Beleg an <a href="mailto:${esc(cfg.hinweisEmail)}">${esc(cfg.hinweisEmail)}</a>. Übernommene Hinweise erscheinen mit ihrem Anlass im Protokoll.</p>
 </section>
 <section id="referenzfaelle">
