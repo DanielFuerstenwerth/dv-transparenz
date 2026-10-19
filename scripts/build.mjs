@@ -286,7 +286,9 @@ const GRUPPE = {
   ohne: { rang: 1, label: 'Ohne weitere Produkte', sortierung: 'sortiert nach erster Veröffentlichung', text: 'Direktvermarktung ohne Stromtarif, Messstellenbetrieb oder Hardware des Anbieters.' },
   tarif_messstelle: { rang: 2, label: 'Gekoppelt an Stromtarif und/oder Messstellenbetrieb', sortierung: 'alphabetisch', text: 'Nur mit Stromtarif und/oder Messstellenbetrieb des Anbieters. Technische Voraussetzungen, die Geräte beliebiger Hersteller erfüllen können, etwa ein Batteriespeicher, stehen unter den Einschränkungen.' },
   hardware: { rang: 3, label: 'Gekoppelt an Hardware des Anbieters', sortierung: 'alphabetisch', text: 'Nur mit Anlage, Speicher oder Energiemanager des Anbieters oder seiner Partner.' },
-  unklar: { rang: 4, label: 'Kopplung noch nicht erfasst', sortierung: 'alphabetisch', text: 'Zur Kopplung liegt noch keine Angabe vor.' }
+  unklar: { rang: 4, label: 'Kopplung noch nicht erfasst', sortierung: 'alphabetisch', text: 'Zur Kopplung liegt noch keine Angabe vor.' },
+  // Seit 19.10.2026: Pilotprojekte und befristete Aktionen (Merkmal „angebotsform“) werden nicht nach Kopplung eingereiht
+  pilot: { rang: 5, label: 'Pilotprojekte und befristete Aktionen', sortierung: 'nicht eingereiht, alphabetisch', text: 'Befristete Pilotprojekte und Aktionen stehen unabhängig von ihrer Kopplung am Ende der Liste und zählen nicht in die Kennzahlen. Die Kopplung steht bei den Einschränkungen.' }
 };
 
 // Ausprägungen, die nicht mehr vergeben werden (frühere Angaben behalten sie im Verlauf)
@@ -300,7 +302,13 @@ function gruppe(angebot) {
   if (w.includes('hardware_anbieter')) key = 'hardware';
   else if (w.some((k) => ['stromtarif', 'messstellenbetrieb'].includes(k))) key = 'tarif_messstelle';
   else if (w.includes('keine')) key = 'ohne';
-  return { key, ...GRUPPE[key], angabe: a, unsicher: !!a && a.status !== 'veroeffentlicht' };
+  const kopplungKey = key;
+  if (istPilot(angebot)) key = 'pilot';
+  return { key, kopplungKey, ...GRUPPE[key], angabe: a, unsicher: !!a && a.status !== 'veroeffentlicht' };
+}
+
+function istPilot(angebot) {
+  return angabenVon(angebot, 'angebotsform').some((x) => x.status === 'veroeffentlicht' && (x.wert_auswahl || []).includes('pilot_aktion'));
 }
 
 function erstVeroeffentlicht(angebot) {
@@ -489,7 +497,7 @@ const ersterSatz = (s) => { const m = String(s || '').match(/^(.+?[.;])(\s|$)/);
 function einschraenkungen(a) {
   const teile = [];
   const k = a.grp.angabe;
-  if (k && a.grp.key !== 'ohne' && a.grp.key !== 'unklar') {
+  if (k && a.grp.kopplungKey !== 'ohne' && a.grp.kopplungKey !== 'unklar') {
     const text = k.bedingung || wertText({ ...k, status: 'veroeffentlicht' }, merkmale.kopplung);
     teile.push(`<span class="k">nur mit</span> ${beleg([k], esc(text))}${a.grp.unsicher ? ' <span class="unsicher">unklar</span>' : ''}`);
   }
@@ -610,11 +618,12 @@ function gruppenKopf(g) {
 function startseite() {
   const tiefe = 0;
   const L = (z) => link(tiefe, z);
-  // Kennzahlen je Anbieter (Unternehmen), nicht je Angebot
-  const anbieterIds = [...new Set(endkunden.map((a) => a.organisation_id))];
-  const hatBuchbar = (id) => endkunden.some((a) => a.organisation_id === id && a.verf.info?.gruppe === 'buchbar');
+  // Kennzahlen je Anbieter (Unternehmen), nicht je Angebot; ohne Pilotprojekte und befristete Aktionen
+  const regulaer = endkunden.filter((a) => a.grp.key !== 'pilot');
+  const anbieterIds = [...new Set(regulaer.map((a) => a.organisation_id))];
+  const hatBuchbar = (id) => regulaer.some((a) => a.organisation_id === id && a.verf.info?.gruppe === 'buchbar');
   const anbieterBuchbar = anbieterIds.filter(hatBuchbar).length;
-  const anbieterAngekuendigt = anbieterIds.filter((id) => !hatBuchbar(id) && endkunden.some((a) => a.organisation_id === id && a.verf.info?.gruppe === 'angekuendigt')).length;
+  const anbieterAngekuendigt = anbieterIds.filter((id) => !hatBuchbar(id) && regulaer.some((a) => a.organisation_id === id && a.verf.info?.gruppe === 'angekuendigt')).length;
 
   const gruppen = Object.keys(GRUPPE).map((key) => ({ key, g: GRUPPE[key], liste: endkunden.filter((a) => a.grp.key === key) })).filter((x) => x.liste.length);
   const zeilen = gruppen.map(({ g, liste }) => liste.map((a, i) => `<tr${a.oeffentlich ? '' : ' class="entwurf"'}>
@@ -1016,6 +1025,7 @@ function methodikseite() {
 <p>Die Übersicht gliedert die Angebote für Endkunden danach, ob die Direktvermarktung an weitere Produkte gekoppelt ist (Merkmal „Gekoppelt an“). Ein intelligentes Messsystem ist für die Direktvermarktung fast immer erforderlich und zählt nicht als Kopplung, solange es von einem beliebigen Messstellenbetreiber stammen kann. Ist ein Angebot an Hardware des Anbieters gekoppelt, steht es in der dritten Gruppe, auch wenn zusätzlich ein Stromtarif erforderlich ist. Technische Voraussetzungen, die Geräte beliebiger Hersteller erfüllen können, etwa ein Batteriespeicher oder ein kompatibles Energiemanagement, sind keine Kopplung; sie stehen bei den Einschränkungen unter „nur mit“.</p>
 <dl class="glossar">${Object.entries(GRUPPE).filter(([k]) => k !== 'unklar').map(([, g]) => `<div><dt>${esc(g.label)} <span class="meta">${esc(g.sortierung)}</span></dt><dd>${esc(g.text)}</dd></div>`).join('')}</dl>
 <p>In der Gruppe „Ohne weitere Produkte“ stehen die Angebote in der Reihenfolge ihrer ersten auffindbaren Veröffentlichung, in den übrigen Gruppen alphabetisch nach Anbieter. Die Reihenfolge ist keine Bewertung.</p>
+<p>Pilotprojekte und befristete Aktionen (Merkmal „Angebotsform“) werden nicht nach ihrer Kopplung eingereiht. Sie stehen in einer eigenen Gruppe am Ende der Liste, ihre Kopplung steht bei den Einschränkungen, und sie zählen nicht in die Kennzahlen der Startseite.</p>
 <p>Je Angebot zeigt die Übersicht den Status, die Einschränkungen (Kopplung, Leistungsgrenzen, weitere Bedingungen), das Vergütungsmodell und die Preisgestaltung. Die Preisgestaltung fasst zusammen, was Kundinnen und Kunden dem Anbieter zahlen; sie beruht ausschließlich auf Veröffentlichungen der Anbieter. Liegen zu Preisen nur Berichte der Fachpresse vor, steht die Angabe dezenter und mit dem Hinweis „laut Fachpresse“. Alle erfassten Angaben einschließlich Neu- oder Bestandsanlagen und Form der Direktvermarktung stehen in der <a href="${L('detailansicht')}">Detailansicht</a>, Wortlaut, Quellen und frühere Stände auf den Seiten der Angebote.</p>
 <p>Die Angebote für Installateure stehen in der Reihenfolge ihrer ersten auffindbaren Veröffentlichung im Zusammenhang mit der Direktvermarktung, die Angebote für Anbieter für Direktvermarktung alphabetisch. Die Beschreibungen geben knapp und möglichst nah am Wortlaut wieder, was die Quellen nennen; werbende Aussagen werden nicht übernommen. Beide Bereiche sind ergänzende Informationen und fließen nicht in die Kennzahlen der Startseite ein.</p>
 <p>Das Portal spricht keine Empfehlungen aus und vergibt keine Rangplätze oder Auszeichnungen, auch nicht gegen Entgelt. Anbieter haben keinen Einfluss auf den Inhalt der Angaben.</p>
