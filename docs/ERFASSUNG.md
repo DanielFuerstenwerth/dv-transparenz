@@ -106,6 +106,13 @@ Bereich zwischen den Angeboten für Endkunden und denen für Anbieter für Direk
 - Liegt nur Fachpresse vor, Quelle `medienbericht`; die Startseite markiert das mit „laut Fachpresse“.
 - Neue Angebote wie alle anderen erst als Entwurf, dann veröffentlicht; Änderungen erscheinen im Änderungsprotokoll.
 
+## Angebote für Anbieter für Direktvermarktung (`dienstleister`)
+
+Bereich am Ende der Startseite, als Tabelle (Anbieter & Angebot, Leistungsumfang, Zielkunden, Links). Ergänzende Information: zählt nicht in die Kennzahlen.
+
+- Reihenfolge: alphabetisch nach Anbieter. Angebote mit unklarem Leistungsumfang stehen am Ende des Bereichs.
+- Unklarer Leistungsumfang: Ist nicht eindeutig belegt, ob der Anbieter die Direktvermarktung selbst erbringt oder nur die technische Anbindung daran (etwa ein HEMS, das an einen Direktvermarkter angebunden wird), wird `leistungsumfang` mit `status = 'unklar'` erfasst. Der Vorbehalt steht in `anmerkung` und erscheint auf der Website unter der Angabe. Die Liste markiert solche Angebote mit „unklar“ und reiht sie ans Ende.
+
 ## Korrekturen des Startbestands
 
 Korrekturen an Angaben, die schon im Startbestand vom 16.10.2026 hätten richtig sein müssen, werden wie jede Korrektur fortgeschrieben, aber mit `startbestand = true` erfasst. Sie erscheinen nicht im Änderungsprotokoll der Website, bleiben aber in `aenderungen.csv` mit Kennzeichen enthalten. Nur auf ausdrückliche Vorgabe von Daniel.
