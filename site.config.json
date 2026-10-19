@@ -1,6 +1,7 @@
 {
   "siteUrl": "https://dv-transparenz.de",
   "portalName": "Transparenzportal Direktvermarktung",
+  "projektVon": "1000GW",
   "supabaseUrl": "https://cfpxazyhhgtfttztcwmx.supabase.co",
   "supabasePublishableKey": "sb_publishable_A_K2f32sUrwFHsBOUTU2cQ__zgugvdO",
   "kontaktEmail": "kontakt@1000gw.de",

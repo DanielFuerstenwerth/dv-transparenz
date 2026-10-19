@@ -47,14 +47,15 @@ OG_HTML = """<!doctype html><html><head><meta charset="utf-8"><style>
 body{margin:0;width:1200px;height:627px;font-family:Inter;color:#102A4C;
 background:radial-gradient(900px 340px at 88% -5%,rgba(169,201,239,.75),transparent 70%),linear-gradient(180deg,#FAFCFF 0%,#E8F1FD 100%);
 display:flex;flex-direction:column;justify-content:space-between;padding:72px 84px;box-sizing:border-box}
-.w{font-weight:700;font-size:44px;letter-spacing:-.035em}
-h1{font-weight:500;font-size:68px;letter-spacing:-.025em;line-height:1.08;margin:0 0 22px;max-width:16ch}
+h1{font-weight:700;font-size:76px;letter-spacing:-.03em;line-height:1.04;margin:0 0 26px}
+h1 span{display:block}
+.t b{font-weight:700;color:#102A4C;letter-spacing:-.03em}
 p{font-size:28px;color:#1D3049;margin:0}
 .f{display:flex;justify-content:space-between;align-items:flex-end;font-size:22px;color:#526780;border-top:1px solid #D6E0EC;padding-top:22px}
 </style></head><body>
-<div class="w">1000GW</div>
+<div></div>
 <div><h1>PORTAL</h1><p>Angebote für PV-Anlagen bis 100 kWp. Jede Angabe mit Quelle und Datum.</p></div>
-<div class="f"><span>DOMAIN</span><span>Ein Angebot der BETREIBER</span></div>
+<div class="f"><span>DOMAIN</span><span class="t">Ein Projekt von <b>PROJEKTVON</b></span></div>
 </body></html>"""
 
 
@@ -63,9 +64,10 @@ async def vorschaubild():
     from playwright.async_api import async_playwright
     cfg = json.loads((ROOT / "site.config.json").read_text())
     html = (OG_HTML.replace("FONTS", FONTS.as_uri())
-            .replace("PORTAL", cfg["portalName"])
+            .replace("PORTAL", "".join(f"<span>{w}</span>" for w in cfg["portalName"].split()))
+            .replace("PROJEKTVON", cfg.get("projektVon") or cfg["betreiber"]["name"])
             .replace("DOMAIN", cfg["siteUrl"].replace("https://", ""))
-            .replace("BETREIBER", cfg["betreiber"]["name"]))
+            )
     with tempfile.NamedTemporaryFile("w", suffix=".html", delete=False) as f:
         f.write(html)
     async with async_playwright() as p:

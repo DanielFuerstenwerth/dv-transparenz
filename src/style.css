@@ -1,4 +1,4 @@
-/* 1000GW · Transparenzportal Direktvermarktung
+/* Transparenzportal Direktvermarktung · ein Projekt von 1000GW
    Farben und Typografie nach Startpaket v6, Analysepalette 01 Solar & Graphit */
 
 @font-face { font-family: "Inter"; font-weight: 400; font-style: normal; font-display: swap; src: url("fonts/inter-400.woff") format("woff"); }
@@ -90,9 +90,12 @@ td.meta { display: table-cell; }
 /* Kopf */
 .kopf { background: var(--weiss); border-bottom: 1px solid var(--linie); position: sticky; top: 0; z-index: 5; }
 .kopf-innen { display: flex; align-items: center; justify-content: space-between; gap: 24px; min-height: 72px; }
-.marke { display: flex; align-items: center; gap: 14px; text-decoration: none; color: var(--navy); min-width: 0; }
-.wortmarke { font-weight: 700; font-size: 26px; letter-spacing: -0.035em; color: var(--navy); line-height: 1; }
-.portal { font-size: var(--fs-nav); color: var(--navy); padding-left: 14px; border-left: 1px solid var(--linie); line-height: 1.25; }
+.marke { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; text-decoration: none; color: var(--navy); min-width: 0; }
+.portalmarke { font-weight: 700; font-size: 22px; letter-spacing: -0.025em; color: var(--navy); line-height: 1.1; }
+.portalmarke span { white-space: nowrap; }
+.traeger { font-size: 12.5px; color: var(--blaugrau); line-height: 1; letter-spacing: 0.005em; }
+.traeger-marke { font-weight: 700; color: var(--navy); letter-spacing: -0.03em; }
+.marke:hover .portalmarke { color: var(--kobalt); }
 .nav { display: flex; gap: 28px; }
 .nav a { color: var(--tinte); text-decoration: none; font-size: var(--fs-nav); padding: 6px 0; border-bottom: 2px solid transparent; }
 .nav a:hover { color: var(--navy); border-bottom-color: var(--linie); }
@@ -101,8 +104,8 @@ td.meta { display: table-cell; }
 
 @media (max-width: 800px) {
   .kopf-innen { flex-wrap: wrap; min-height: 60px; gap: 12px; padding-top: 10px; padding-bottom: 10px; }
-  .wortmarke { font-size: 22px; }
-  .portal { font-size: 14px; padding-left: 10px; }
+  .portalmarke { font-size: 18px; }
+  .traeger { font-size: 12px; }
   .menue { display: block; }
   .nav { display: none; width: 100%; flex-direction: column; gap: 0; padding-bottom: 6px; }
   .nav.offen { display: flex; }
@@ -110,8 +113,8 @@ td.meta { display: table-cell; }
   .nav a[aria-current="page"] { border-bottom-color: var(--linie); font-weight: 600; }
 }
 @media (max-width: 480px) {
-  .marke { flex-direction: column; align-items: flex-start; gap: 3px; }
-  .portal { border-left: 0; padding-left: 0; font-size: 13px; color: var(--blaugrau); }
+  .kopf .portalmarke span { display: block; }
+  .marke { gap: 4px; }
 }
 
 /* Auftakt: heller Himmel ohne Bild */
@@ -296,8 +299,8 @@ blockquote { margin: 6px 0 0; padding: 2px 0 2px 12px; border-left: 2px solid va
 /* Fuß */
 .fuss { background: var(--navy); color: var(--himmel); padding: 48px 0 40px; font-size: var(--fs-meta); }
 .fuss-innen { display: grid; grid-template-columns: 1fr auto; gap: 24px 40px; align-items: start; }
-.fuss .wortmarke { color: var(--weiss); }
-.wortmarke-klein { font-size: 22px; display: inline-block; margin-bottom: 8px; }
+.fuss .portalmarke { color: var(--weiss); }
+.portalmarke-fuss { font-size: 20px; display: inline-block; margin-bottom: 8px; }
 .fuss p { margin: 0; }
 .fuss nav { display: flex; flex-wrap: wrap; gap: 8px 24px; }
 .fuss a { color: var(--weiss); text-decoration: none; }

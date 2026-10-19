@@ -363,6 +363,11 @@ const NAV = [
   { ziel: 'methodik', label: 'Methodik', key: 'methodik' }
 ];
 
+// Wortmarke des Portals: zwei Wörter, die auf schmalen Bildschirmen untereinander stehen dürfen.
+function portalmarke() {
+  return cfg.portalName.split(' ').map((w) => `<span>${esc(w)}</span>`).join(' ');
+}
+
 function seite({ tiefe, titel, beschreibung, kanonisch, aktiv, inhalt }) {
   const L = (z) => link(tiefe, z);
   const voll = titel ? `${titel} – ${cfg.portalName}` : cfg.portalName;
@@ -401,8 +406,8 @@ ${VORSCHAU ? '<div class="vorschau">Vorschau mit unveröffentlichten Entwürfen.
 <header class="kopf">
   <div class="rahmen kopf-innen">
     <a class="marke" href="${L('')}" aria-label="${esc(cfg.portalName)} – Startseite">
-      <span class="wortmarke">1000GW</span>
-      <span class="portal">${esc(cfg.portalName)}</span>
+      <span class="portalmarke">${portalmarke()}</span>
+      ${cfg.projektVon ? `<span class="traeger">Ein Projekt von <span class="traeger-marke">${esc(cfg.projektVon)}</span></span>` : ''}
     </a>
     <button class="menue" type="button" aria-expanded="false" aria-controls="navigation">Menü</button>
     <nav id="navigation" class="nav" aria-label="Hauptnavigation">
@@ -416,8 +421,8 @@ ${inhalt}
 <footer class="fuss">
   <div class="rahmen fuss-innen">
     <div>
-      <span class="wortmarke wortmarke-klein">1000GW</span>
-      <p>Ein Angebot der ${esc(cfg.betreiber.name)}.</p>
+      <span class="portalmarke portalmarke-fuss">${portalmarke()}</span>
+      <p>Ein Projekt der ${esc(cfg.betreiber.name)}.</p>
     </div>
     <nav aria-label="Weitere Seiten">
       <a href="${L('methodik')}">Methodik</a>
