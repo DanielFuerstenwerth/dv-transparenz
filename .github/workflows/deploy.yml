@@ -36,7 +36,18 @@ jobs:
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add data/
             git commit -m "Datenstand $(date -u +%Y-%m-%dT%H:%MZ)"
-            git push
+            # Hat ein paralleler Lauf inzwischen gepusht, auf den neuesten Stand setzen
+            # (bei Konflikten in data/ gilt der eigene, neuere Datenstand). Scheitert das,
+            # wird nur der Datenstand-Commit ausgelassen; die Website wird trotzdem veröffentlicht.
+            for versuch in 1 2 3; do
+              git push && exit 0
+              git fetch origin main
+              if ! git rebase -X theirs origin/main; then
+                git rebase --abort || true
+                break
+              fi
+            done
+            echo "::warning::Datenstand konnte nicht ins Repository geschrieben werden; der nächste Lauf holt das nach."
           fi
 
       - uses: actions/upload-pages-artifact@v3
