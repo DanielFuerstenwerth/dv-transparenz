@@ -43,6 +43,10 @@
     {
       "datum": "2026-10-19",
       "text": "Die Detailansicht zeigt alle erfassten Merkmale als Tabelle, gegliedert wie die Übersicht in Angebote für Endkunden, für Installateure und für Anbieter für Direktvermarktung; die Spalten folgen dem Merkmalskatalog."
+    },
+    {
+      "datum": "2026-10-19",
+      "text": "Der Bereich „Angebote für Anbieter für Direktvermarktung“ ist nun eine Tabelle; Angebote mit unklarem Leistungsumfang stehen am Ende des Bereichs und sind mit „unklar“ und einem Vorbehalt gekennzeichnet."
     }
   ],
   "startbestandBis": "2026-10-16"

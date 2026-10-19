@@ -171,6 +171,8 @@ function wertText(a, m, praefix = '') {
     const aus = a[praefix + 'wert_auswahl'];
     // „unklar“ mit wahrscheinlichen Werten: die Werte mit anzeigen
     if (status === 'unklar' && Array.isArray(aus) && aus.length && m) return `${label}: ${aus.map((k) => optionLabel(m, k)).join(', ')}`;
+    const txt = a[praefix + 'wert_text'];
+    if (status === 'unklar' && m?.datentyp === 'text' && txt) return `${label}: ${txt}`;
     return label;
   }
   const einheit = a.einheit ?? m?.einheit;
@@ -323,12 +325,15 @@ const BEREICH = {
   dienstleister: 'Angebote für Anbieter für Direktvermarktung'
 };
 
+const umfangUnklar = (a) => { const l = angabenVon(a, 'leistungsumfang'); return l.length > 0 && l.every((x) => x.status === 'unklar'); };
 const anbieterName = (a) => `${a.organisation?.name || ''} ${a.name}`;
 const sortierteAngebote = (kat) => angebote
   .filter((a) => a.kategorie_key === kat)
   .map((a) => ({ ...a, verf: verfuegbarkeit(a), grp: gruppe(a), erst: erstVeroeffentlicht(a), stand: datenstand(a) }))
   .sort((a, b) => {
     if (kat === 'installateure') return String(a.erst || '9999').localeCompare(String(b.erst || '9999')) || anbieterName(a).localeCompare(anbieterName(b), 'de', { sensitivity: 'base' });
+    // Anbieter für Direktvermarktung: Angebote mit unklarem Leistungsumfang ganz unten
+    if (kat === 'dienstleister') return (umfangUnklar(a) ? 1 : 0) - (umfangUnklar(b) ? 1 : 0) || a.name.localeCompare(b.name, 'de');
     if (kat !== 'endkunden') return a.name.localeCompare(b.name, 'de');
     return a.grp.rang - b.grp.rang
       || (a.grp.key === 'ohne' ? String(a.erst || '9999').localeCompare(String(b.erst || '9999')) : 0)
@@ -642,14 +647,20 @@ function startseite() {
 </tr>`).join('\n')).join('\n');
 
   const dl = dienstleister.map((a) => {
-    const umfang = einfach(a, 'leistungsumfang');
-    const ziel = einfach(a, 'zielkunden');
-    return `<article class="dl-karte${a.oeffentlich ? '' : ' entwurf'}">
-  <h3><a href="${L('angebote/' + a.slug)}">${esc(a.name)}</a>${a.oeffentlich ? '' : ' <span class="entwurf-marke">Entwurf</span>'}</h3>
-  <p class="unter">${esc(a.organisation?.name || '')}</p>
-  <p>${umfang.leer ? esc(a.kurzbeschreibung || umfang.text) : beleg(angabenVon(a, 'leistungsumfang'), esc(umfang.text))}</p>
-  ${ziel.leer ? '' : `<p class="meta">Zielkunden: ${beleg(angabenVon(a, 'zielkunden'), esc(ziel.text))}</p>`}
-</article>`;
+    const umfangL = angabenVon(a, 'leistungsumfang');
+    const u = umfangL.find((x) => x.status === 'veroeffentlicht') || umfangL.find((x) => x.status === 'unklar');
+    const unklar = umfangUnklar(a);
+    const fp = umfangL.length && umfangL.every((x) => quellen[x.quelle_id]?.typ === 'medienbericht');
+    const umfangHtml = u && u.wert_text
+      ? `${unklar ? '<span class="unsicher">unklar</span> ' : ''}${fp ? INDIREKT_MARKE : ''}${beleg([u], esc(u.wert_text))}${unklar && u.anmerkung ? `<span class="dl-vorbehalt">${esc(u.anmerkung)}</span>` : ''}`
+      : esc(a.kurzbeschreibung || 'Noch nicht erfasst');
+    const ziel = angabenVon(a, 'zielkunden').filter((x) => x.status === 'veroeffentlicht');
+    return `<tr${unklar ? ' class="dl-unklar"' : ''}>
+  <th scope="row" class="an" data-label="Anbieter &amp; Angebot">${anbieterAngebot(a, L)}</th>
+  <td data-label="Leistungsumfang" class="dl-umfang">${umfangHtml}</td>
+  <td data-label="Zielkunden" class="dl-ziel">${ziel.length ? beleg(ziel, esc(ziel[0].wert_text)) : '–'}</td>
+  <td data-label="Links" class="li"><div class="links">${a.url ? `<a class="extern" href="${esc(a.url)}" rel="noopener" target="_blank">Anbieter</a>` : ''}<a href="${L('angebote/' + a.slug)}">Quellen &amp; Verlauf</a></div></td>
+</tr>`;
   }).join('\n');
 
   const nurFachpresse = (liste) => liste.length > 0 && liste.every((x) => quellen[x.quelle_id]?.typ === 'medienbericht');
@@ -719,8 +730,15 @@ ${inst || '<li>Die ersten Einträge werden geprüft.</li>'}
   <div class="rahmen">
     <h2 id="h-dl">${BEREICH.dienstleister}</h2>
     <p class="einleitung">Plattformen und Dienstleistungen für Unternehmen, die selbst Direktvermarktung anbieten wollen.</p>
-    <div class="dl-raster">
-${dl || '<p>Die ersten Einträge werden geprüft.</p>'}
+    <p class="einleitung">Alphabetisch; Angebote mit unklarem Leistungsumfang stehen am Ende.</p>
+    <div class="tabelle-rahmen">
+      <table class="dvliste dl-tabelle">
+        <caption class="sr">${BEREICH.dienstleister}</caption>
+        <thead><tr><th scope="col">Anbieter &amp; Angebot</th><th scope="col">Leistungsumfang</th><th scope="col">Zielkunden</th><th scope="col">Links</th></tr></thead>
+        <tbody>
+${dl || '<tr><td colspan="4">Die ersten Einträge werden geprüft.</td></tr>'}
+        </tbody>
+      </table>
     </div>
   </div>
 </section>
@@ -1118,7 +1136,7 @@ function methodikseite() {
 <p>In der Gruppe „Ohne weitere Produkte“ stehen die Angebote in der Reihenfolge ihrer ersten auffindbaren Veröffentlichung, in den übrigen Gruppen alphabetisch nach Anbieter. Die Reihenfolge ist keine Bewertung.</p>
 <p>Pilotprojekte und befristete Aktionen (Merkmal „Angebotsform“) werden nicht nach ihrer Kopplung eingereiht. Sie stehen in einer eigenen Gruppe am Ende der Liste, ihre Kopplung steht bei den Einschränkungen, und sie zählen nicht in die Kennzahlen der Startseite.</p>
 <p>Je Angebot zeigt die Übersicht den Status, die Einschränkungen (Kopplung, Leistungsgrenzen, weitere Bedingungen), das Vergütungsmodell und die Preisgestaltung. Die Preisgestaltung fasst zusammen, was Kundinnen und Kunden dem Anbieter zahlen; sie beruht ausschließlich auf Veröffentlichungen der Anbieter. Liegen zu Preisen nur Berichte der Fachpresse vor, steht die Angabe dezenter und mit dem Hinweis „laut Fachpresse“. Alle erfassten Angaben einschließlich Neu- oder Bestandsanlagen und Form der Direktvermarktung stehen in der <a href="${L('detailansicht')}">Detailansicht</a>, Wortlaut, Quellen und frühere Stände auf den Seiten der Angebote.</p>
-<p>Die Angebote für Installateure stehen in der Reihenfolge ihrer ersten auffindbaren Veröffentlichung im Zusammenhang mit der Direktvermarktung, die Angebote für Anbieter für Direktvermarktung alphabetisch. Die Beschreibungen geben knapp und möglichst nah am Wortlaut wieder, was die Quellen nennen; werbende Aussagen werden nicht übernommen. Beide Bereiche sind ergänzende Informationen und fließen nicht in die Kennzahlen der Startseite ein.</p>
+<p>Die Angebote für Installateure stehen in der Reihenfolge ihrer ersten auffindbaren Veröffentlichung im Zusammenhang mit der Direktvermarktung, die Angebote für Anbieter für Direktvermarktung alphabetisch; Angebote, deren Leistungsumfang unklar ist (etwa ob die Direktvermarktung selbst angeboten wird oder nur die Anbindung daran), stehen am Ende ihres Bereichs und sind mit „unklar“ und einem Vorbehalt gekennzeichnet. Die Beschreibungen geben knapp und möglichst nah am Wortlaut wieder, was die Quellen nennen; werbende Aussagen werden nicht übernommen. Beide Bereiche sind ergänzende Informationen und fließen nicht in die Kennzahlen der Startseite ein.</p>
 <p>Das Portal spricht keine Empfehlungen aus und vergibt keine Rangplätze oder Auszeichnungen, auch nicht gegen Entgelt. Anbieter haben keinen Einfluss auf den Inhalt der Angaben.</p>
 </section>
 <section>

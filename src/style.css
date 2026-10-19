@@ -484,3 +484,11 @@ blockquote { margin: 6px 0 0; padding: 2px 0 2px 12px; border-left: 2px solid va
   .blatt-stand { width: 100%; margin-left: 0; padding: 8px 0 6px; order: -1; }
 }
 @media print { .blatt { max-height: none; overflow: visible; } .blatt-tabelle thead td, .blatt-tabelle thead th, .blatt-tabelle .nr, .blatt-tabelle .an { position: static; } }
+
+/* Angebote für Anbieter für Direktvermarktung als Tabelle */
+.dl-tabelle { min-width: 900px; background: var(--weiss); }
+.dl-tabelle td.dl-umfang { min-width: 380px; }
+.dl-tabelle td.dl-ziel { min-width: 220px; }
+.dl-vorbehalt { display: block; margin-top: 6px; font-size: 13px; color: var(--blaugrau); }
+.dl-tabelle tr.dl-unklar th, .dl-tabelle tr.dl-unklar td { border-top: 1px dashed var(--linie); }
+@media (max-width: 800px) { .dl-tabelle { min-width: 0; } .dl-tabelle td.dl-umfang, .dl-tabelle td.dl-ziel { min-width: 0; } }
