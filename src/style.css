@@ -202,19 +202,6 @@ tr[hidden] { display: none; }
 
 /* Detailansicht */
 .tabelle-breit { margin-top: 18px; border-left: 1px solid var(--linie); border-right: 1px solid var(--linie); }
-.details { min-width: 1900px; font-size: 14px; }
-.details thead th { white-space: normal; vertical-align: bottom; min-width: 110px; }
-.details td:nth-child(2) { min-width: 150px; }
-.details td:nth-child(3) { min-width: 170px; }
-.details tbody th, .details tbody td { padding: 12px; }
-.details tbody th { min-width: 210px; }
-.details tbody th a { font-weight: 600; color: var(--navy); text-decoration: none; }
-.details tbody th a:hover { text-decoration: underline; }
-.details thead th:first-child, .details tbody th { position: sticky; left: 0; z-index: 1; }
-.details tbody th { background: var(--weiss); box-shadow: 1px 0 0 var(--linie); }
-.details tbody tr:nth-child(even) th { background: var(--wolkengrau); }
-.details tr.entwurf th { box-shadow: inset 3px 0 0 var(--solargelb), 1px 0 0 var(--linie); }
-.details .chip { white-space: normal; }
 
 /* Status */
 .chip { display: inline-flex; align-items: center; gap: 7px; font-size: var(--fs-meta); color: var(--tinte); white-space: nowrap; }
@@ -365,19 +352,13 @@ blockquote { margin: 6px 0 0; padding: 2px 0 2px 12px; border-left: 2px solid va
   .links { display: flex; flex-wrap: wrap; gap: 4px 16px; }
 }
 
-/* Detailansicht: Gruppen und mehrere Werte je Zelle */
-.details { min-width: 2700px; }
-.details td.breit { min-width: 290px; }
-.details .w { display: block; }
-.details .w + .w { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--linie); }
-.details tr.gr-zeile th { position: static; background: var(--eisblau); box-shadow: none; padding: 9px 12px; border-bottom: 1px solid var(--navy); }
 .gr-innen { position: sticky; left: 12px; display: inline-flex; align-items: baseline; gap: 14px; }
 .gr-innen .gr-name, .gr-innen .gr-sort { display: inline; margin: 0; }
 
 /* Anbieter und Angebot in einer Zelle */
 .anb { display: block; font-weight: 600; color: var(--navy); }
-.dvliste th.an a, .details th.an a { display: block; font-weight: 400; color: var(--kobalt); text-decoration: none; margin-top: 2px; }
-.dvliste th.an a:hover, .details th.an a:hover { text-decoration: underline; }
+.dvliste th.an a { display: block; font-weight: 400; color: var(--kobalt); text-decoration: none; margin-top: 2px; }
+.dvliste th.an a:hover { text-decoration: underline; }
 
 /* Kennzahlen: Zahlen auf einer Linie, auch wenn Bezeichnungen umbrechen */
 .kennzahlen div { flex-direction: column; justify-content: space-between; gap: 6px; }
@@ -430,3 +411,76 @@ blockquote { margin: 6px 0 0; padding: 2px 0 2px 12px; border-left: 2px solid va
 .inst-hinweis .beleg { color: var(--blaugrau); }
 .inst-links { margin-top: 8px !important; display: flex; flex-wrap: wrap; gap: 4px 16px; font-family: var(--mono); font-size: 12.5px !important; }
 .meta-inline { color: var(--blaugrau); font-size: 0.88em; margin-left: 6px; }
+
+/* Detailansicht als Tabellenblatt: Gitter, Spaltenbuchstaben, Zeilennummern, fixierte Kopfzeilen und erste Spalte */
+.blatt-kopf { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px 40px; flex-wrap: wrap; padding-bottom: 18px; border-bottom: 1px solid var(--linie); }
+.blatt-kopf h1 { font-size: var(--fs-h2); margin: 0 0 8px; letter-spacing: -0.015em; }
+.blatt-lead { margin: 0; max-width: 88ch; font-size: 15px; color: var(--tinte); line-height: 1.5; }
+.blatt-reiter { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0; margin: 18px 0 12px; font-family: var(--mono); font-size: 12px; border-bottom: 1px solid var(--linie); }
+.blatt-reiter a { color: var(--tinte); text-decoration: none; padding: 6px 14px 5px; border: 1px solid var(--linie); border-bottom: 0; margin-right: -1px; background: var(--wolkengrau); }
+.blatt-reiter a:first-child { background: var(--weiss); color: var(--navy); font-weight: 600; box-shadow: inset 0 2px 0 var(--kobalt); }
+.blatt-reiter a:hover { background: var(--eisblau); color: var(--navy); }
+.blatt-stand { margin-left: auto; padding: 0 0 6px 16px; color: var(--blaugrau); }
+.blatt-bereich { margin-top: 34px; scroll-margin-top: 90px; }
+.blatt-leiste { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 8px; }
+.blatt-leiste h2 { font-size: var(--fs-h3); margin: 0; }
+.blatt-mass { margin: 0; font-family: var(--mono); font-size: 11.5px; color: var(--blaugrau); }
+
+.blatt { max-height: calc(100vh - 150px); overflow: auto; border: 1px solid #B9C7D8; background: var(--weiss); }
+.blatt-tabelle { border-collapse: separate; border-spacing: 0; font-size: 12.5px; line-height: 1.4; color: var(--tinte); width: max-content; min-width: 100%; }
+.blatt-tabelle th, .blatt-tabelle td { border-right: 1px solid var(--linie); border-bottom: 1px solid var(--linie); padding: 5px 8px; vertical-align: top; text-align: left; font-weight: 400; background: var(--weiss); width: 150px; min-width: 150px; max-width: 150px; }
+.blatt-tabelle .breit { width: 340px; min-width: 340px; max-width: 340px; }
+.blatt-tabelle th, .blatt-tabelle td { white-space: normal; overflow-wrap: break-word; hyphens: auto; }
+.blatt-tabelle tr.buchstaben td, .blatt-tabelle tr.gruppen th { white-space: nowrap; hyphens: none; }
+.blatt-tabelle .zahl { width: 104px; min-width: 104px; max-width: 104px; font-variant-numeric: tabular-nums; }
+.blatt-tabelle .st { width: 170px; min-width: 170px; max-width: 170px; }
+
+/* Kopf: drei fixierte Zeilen */
+.blatt-tabelle thead td, .blatt-tabelle thead th { position: sticky; z-index: 2; background: var(--wolkengrau); }
+.blatt-tabelle tr.buchstaben td { top: 0; height: 20px; padding: 2px 8px; font-family: var(--mono); font-size: 10.5px; color: var(--blaugrau); text-align: center; background: #EDF1F6; }
+.blatt-tabelle tr.gruppen th, .blatt-tabelle tr.gruppen td { top: 20px; padding: 4px 8px; font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--weiss); background: var(--navy); border-right-color: #2C4568; border-bottom-color: #2C4568; }
+.blatt-tabelle tr.merkmale th, .blatt-tabelle tr.merkmale td { top: 44px; padding: 6px 8px; font-weight: 600; color: var(--navy); vertical-align: bottom; border-bottom: 1px solid var(--navy); cursor: help; }
+.blatt-tabelle tr.merkmale td.nr { cursor: default; }
+.blatt-tabelle thead th.an { top: 20px; vertical-align: bottom; font-weight: 600; color: var(--navy); background: var(--wolkengrau); border-bottom: 1px solid var(--navy); font-family: inherit; font-size: 12.5px; letter-spacing: 0; text-transform: none; }
+
+/* Zeilennummern und erste Spalte fixiert */
+.blatt-tabelle .nr, .blatt-tabelle .ecke { position: sticky; left: 0; z-index: 1; width: 34px; min-width: 34px; max-width: 34px; padding: 5px 6px; text-align: right; font-family: var(--mono); font-size: 10.5px; color: var(--blaugrau); background: #EDF1F6; }
+.blatt-tabelle .an { position: sticky; left: 35px; z-index: 1; width: 200px; min-width: 200px; max-width: 200px; box-shadow: 1px 0 0 #B9C7D8; }
+.blatt-tabelle thead .nr, .blatt-tabelle thead .ecke, .blatt-tabelle thead .an, .blatt-tabelle tr.buchstaben td:nth-child(2) { z-index: 3; }
+.blatt-tabelle tr.buchstaben td:nth-child(2) { position: sticky; left: 35px; box-shadow: 1px 0 0 #B9C7D8; }
+.blatt-tabelle tbody th.an .anb { font-weight: 600; color: var(--navy); }
+.blatt-tabelle tbody th.an a { display: block; color: var(--kobalt); text-decoration: none; margin-top: 1px; }
+.blatt-tabelle tbody th.an a:hover { text-decoration: underline; }
+
+/* Gruppenzeilen (Kopplung) */
+.blatt-tabelle tr.gr-zeile th { background: var(--eisblau); padding: 5px 8px; border-bottom-color: #B9C7D8; width: auto; max-width: none; }
+.blatt-tabelle tr.gr-zeile .nr { background: #DCE7F6; }
+.blatt-tabelle .gr-innen { position: sticky; left: 43px; display: inline-flex; align-items: baseline; gap: 12px; }
+.blatt-tabelle .gr-name { font-weight: 600; color: var(--navy); }
+.blatt-tabelle .gr-sort { font-family: var(--mono); font-size: 10.5px; color: var(--blaugrau); }
+
+/* Zeile markieren beim Überfahren und beim Sprung über #anker */
+.blatt-tabelle tbody tr:not(.gr-zeile):hover td:not(.nr), .blatt-tabelle tbody tr:not(.gr-zeile):hover th { background: #F7FAFE; }
+.blatt-tabelle tbody tr:not(.gr-zeile):hover .nr, .blatt-tabelle tbody tr:target .nr { background: var(--kobalt); color: var(--weiss); }
+.blatt-tabelle tbody tr:target td:not(.nr), .blatt-tabelle tbody tr:target th { background: var(--solargelb-flaeche); }
+.blatt-tabelle tr.entwurf th.an { box-shadow: inset 3px 0 0 var(--solargelb), 1px 0 0 #B9C7D8; }
+
+/* Inhalte der Zellen */
+.blatt-tabelle .w { display: block; }
+.blatt-tabelle .w + .w { margin-top: 5px; padding-top: 5px; border-top: 1px dashed var(--linie); }
+.blatt-tabelle .geltung { font-size: 11.5px; color: var(--blaugrau); margin-top: 1px; }
+.blatt-tabelle .mitteilung { font-size: 10.5px; }
+.blatt-tabelle .unter { display: block; font-size: 11.5px; color: var(--blaugrau); }
+.blatt-tabelle .links { list-style: none; margin: 0; padding: 0; display: block; }
+.blatt-tabelle .links li + li { margin-top: 1px; }
+.blatt-tabelle .links a { color: var(--kobalt); text-decoration: none; }
+.blatt-tabelle .links a:hover { text-decoration: underline; }
+.blatt-tabelle .indirekt-marke { font-size: 10.5px; }
+.blatt-tabelle .leer { color: #9AA8B8; }
+
+@media (max-width: 800px) {
+  .blatt { max-height: calc(100vh - 110px); }
+  .blatt-tabelle .an { width: 150px; min-width: 150px; max-width: 150px; }
+  .blatt-stand { width: 100%; margin-left: 0; padding: 8px 0 6px; order: -1; }
+}
+@media print { .blatt { max-height: none; overflow: visible; } .blatt-tabelle thead td, .blatt-tabelle thead th, .blatt-tabelle .nr, .blatt-tabelle .an { position: static; } }

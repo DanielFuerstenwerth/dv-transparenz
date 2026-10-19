@@ -39,6 +39,10 @@
     {
       "datum": "2026-10-19",
       "text": "Pilotprojekte und befristete Aktionen stehen in einer eigenen Gruppe am Ende der Liste, unabhängig von ihrer Kopplung, und zählen nicht in die Kennzahlen; neues Merkmal „Angebotsform“."
+    },
+    {
+      "datum": "2026-10-19",
+      "text": "Die Detailansicht zeigt alle erfassten Merkmale als Tabelle, gegliedert wie die Übersicht in Angebote für Endkunden, für Installateure und für Anbieter für Direktvermarktung; die Spalten folgen dem Merkmalskatalog."
     }
   ],
   "startbestandBis": "2026-10-16"

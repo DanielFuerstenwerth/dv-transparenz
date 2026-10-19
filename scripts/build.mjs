@@ -394,7 +394,7 @@ function seite({ tiefe, titel, beschreibung, kanonisch, aktiv, inhalt }) {
 <meta property="og:image:height" content="627">
 <meta name="twitter:card" content="summary_large_image">
 ${VORSCHAU ? '<meta name="robots" content="noindex">' : ''}
-<link rel="icon" href="${L('assets/favicon.svg')}" type="image/svg+xml">
+<link rel="icon" href="${L('assets/favicon.svg')}?v=dv" type="image/svg+xml">
 <link rel="preload" href="${L('assets/fonts/inter-400.woff')}" as="font" type="font/woff" crossorigin>
 <link rel="preload" href="${L('assets/fonts/inter-600.woff')}" as="font" type="font/woff" crossorigin>
 <link rel="stylesheet" href="${L('assets/style.css')}">
@@ -598,12 +598,12 @@ function quellLinks(a) {
   return nachTyp;
 }
 
-function linkZelle(a, L) {
+function linkZelle(a, L, ort = 'uebersicht') {
   const nachTyp = quellLinks(a);
   const links = [];
-  if (a.url) links.push(`<a class="extern" href="${esc(a.url)}" rel="noopener" target="_blank"${ev('anbieter-link', a.slug, { ort: 'uebersicht' })}>Anbieter</a>`);
+  if (a.url) links.push(`<a class="extern" href="${esc(a.url)}" rel="noopener" target="_blank"${ev('anbieter-link', a.slug, { ort })}>Anbieter</a>`);
   for (const [typ, label] of [['agb', 'AGB'], ['preisblatt', 'Preisblatt'], ['kalkulator', 'Rechner']]) {
-    (nachTyp[typ] || []).forEach((q, i, arr) => links.push(`<a class="extern" href="${esc(q.url)}" rel="noopener" target="_blank" title="${esc(q.titel)}"${ev('quelle-link', a.slug, { ort: 'uebersicht', typ })}>${label}${arr.length > 1 ? ' ' + (i + 1) : ''}</a>`));
+    (nachTyp[typ] || []).forEach((q, i, arr) => links.push(`<a class="extern" href="${esc(q.url)}" rel="noopener" target="_blank" title="${esc(q.titel)}"${ev('quelle-link', a.slug, { ort, typ })}>${label}${arr.length > 1 ? ' ' + (i + 1) : ''}</a>`));
   }
   links.push(`<a href="${L('angebote/' + a.slug)}">Quellen &amp; Verlauf</a>`);
   return `<ul class="links">${links.map((x) => `<li>${x}</li>`).join('')}</ul>`;
@@ -739,70 +739,156 @@ ${dl || '<p>Die ersten Einträge werden geprüft.</p>'}
 }
 
 // ---------------------------------------------------------------------------
-// Detailansicht: alle erfassten Angaben zu Bedingungen und Preisen
+// Detailansicht: alle erfassten Angaben, als Tabellenblatt je Bereich.
+// Die Spalten ergeben sich aus dem Merkmalskatalog (Gruppe, Sortierung): Jedes Merkmal,
+// zu dem in einem Bereich mindestens eine Angabe vorliegt, erhält dort eine Spalte.
 
-const DETAIL_SPALTEN = [
-  { key: 'kopplung', label: 'Gekoppelt an', breit: true },
-  { key: 'zugelassene_anlagen', label: 'Neu- oder Bestandsanlagen' },
-  { key: 'vermarktungsform', label: 'Form der Direktvermarktung' },
-  { key: 'verguetungsmodell', label: 'Vergütungsmodell', breit: true },
-  { key: 'preisgestaltung', label: 'Preisgestaltung', breit: true },
-  { key: 'preisbasis', label: 'Preisbasis' },
-  { key: 'entgelt_grund', label: 'Grundgebühr' },
-  { key: 'entgelt_menge', label: 'Mengenentgelt' },
-  { key: 'entgelt_anteil', label: 'Erlösanteil' },
-  { key: 'entgelt_einmalig', label: 'Einmalige Kosten' },
-  { key: 'entgelt_sonstiges', label: 'Weitere Kosten', breit: true },
-  { key: 'messsystem', label: 'Messsystem' },
-  { key: 'steuerung', label: 'Steuerung durch den Anbieter' },
-  { key: 'mindestlaufzeit', label: 'Mindestlaufzeit' },
-  { key: 'kuendigungsfrist', label: 'Kündigung' }
+// Kurze Spaltenköpfe; die volle Bezeichnung und die Definition stehen im Tooltip des Spaltenkopfs
+const SPALTE_KURZ = {
+  status: 'Status',
+  start_angekuendigt: 'Start angekündigt',
+  verfuegbar_seit: 'Buchbar seit',
+  erstmals_veroeffentlicht: 'Erstmals veröffentlicht',
+  verfuegbarkeit_regional: 'Regional',
+  angebotsform: 'Angebotsform',
+  zugelassene_anlagen: 'Neu- oder Bestandsanlagen',
+  anlage_vom_anbieter: 'Anlage vom Anbieter',
+  kopplung: 'Gekoppelt an',
+  stromliefervertrag: 'Stromvertrag beim Anbieter',
+  zusatzhardware: 'Zusatzhardware',
+  speicher: 'Speicher',
+  messsystem: 'Intelligentes Messsystem',
+  steuerung: 'Steuerung durch Anbieter',
+  weitere_bedingungen: 'Weitere Bedingungen',
+  vermarktungsform: 'Form der Direktvermarktung',
+  entgelt_menge: 'Mengenentgelt',
+  entgelt_anteil: 'Erlösanteil',
+  entgelt_einmalig: 'Einmalige Kosten',
+  kuendigungsfrist: 'Kündigung',
+  fremde_marke: 'Unter fremder Marke'
+};
+// In andere Spalten eingerechnet
+const SPALTE_IN = { status_kurz: 'status', leistung_max_kwp: 'leistung_min_kwp' };
+
+const spaltenBuchstabe = (i) => { let s = ''; i += 1; while (i > 0) { const r = (i - 1) % 26; s = String.fromCharCode(65 + r) + s; i = Math.floor((i - 1) / 26); } return s; };
+
+function blattSpalten(liste) {
+  const ids = new Set(liste.map((a) => a.id));
+  const belegt = new Set(daten.angabe_aktuell.filter((x) => ids.has(x.angebot_id)).map((x) => SPALTE_IN[x.merkmal_key] || x.merkmal_key));
+  return daten.merkmal
+    .filter((m) => m.aktiv !== false && !SPALTE_IN[m.key] && belegt.has(m.key))
+    .sort((a, b) => (a.sortierung ?? 999) - (b.sortierung ?? 999))
+    .map((m) => {
+      const s = { key: m.key, gruppe: m.gruppe || 'Allgemein', label: SPALTE_KURZ[m.key] || m.bezeichnung, titel: [m.bezeichnung, m.definition].filter(Boolean).join(': '), typ: m.datentyp };
+      if (m.key === 'leistung_min_kwp') Object.assign(s, { label: 'Leistung', titel: 'Mindest- und Höchstleistung der Anlage (Modulleistung)', typ: 'zahl' });
+      return s;
+    });
+}
+
+function blattZelle(a, sp, L) {
+  const leer = '<span class="leer">–</span>';
+  if (sp.key === 'status') {
+    // Status als Merkmal und, falls erfasst, die Kurzfassung der Übersicht darunter
+    const punkt = `<span class="punkt ${a.verf.info?.klasse || 'st-unbekannt'}" aria-hidden="true"></span>`;
+    const st = angabenVon(a, 'status');
+    const haupt = st.length > 1 || !a.verf.info ? (alleWerte(a, 'status') || leer) : beleg(st, esc(a.verf.info.label));
+    const kurz = angabenVon(a, 'status_kurz').filter(veroeff).sort((x, y) => String(y.erfasst_am).localeCompare(String(x.erfasst_am)))[0];
+    return `${punkt}${haupt}${kurz ? `<span class="unter">${beleg([kurz], esc(kurz.wert_text))}</span>` : ''}`;
+  }
+  if (sp.key === 'leistung_min_kwp') {
+    const lmin = angabenVon(a, 'leistung_min_kwp'), lmax = angabenVon(a, 'leistung_max_kwp');
+    return lmin.length || lmax.length ? beleg([...lmax, ...lmin], esc(leistungText(a))) : leer;
+  }
+  const werte = alleWerte(a, sp.key);
+  if (!werte) return leer;
+  // Wie in der Übersicht: Beschreibungen, die nur auf Fachpresse beruhen, dezent kennzeichnen (Preise kennzeichnet alleWerte selbst)
+  const liste = angabenVon(a, sp.key).filter(veroeff);
+  return !PREISMERKMALE.has(sp.key) && sp.typ === 'text' && liste.length && liste.every(indirekt) ? `<span class="indirekt">${INDIREKT_MARKE}${werte}</span>` : werte;
+}
+
+const BLATT_ANHANG = [
+  { key: '_links', gruppe: 'Quellen', label: 'Links', titel: 'Seite des Anbieters, Vertragsbedingungen, Preisblatt und Rechner; Wortlaut und Verlauf auf der Angebotsseite' },
+  { key: '_rechner', gruppe: 'Quellen', label: 'Rechnerabfragen', titel: 'Abfragen des Anbieterrechners für die Referenzfälle', nurEndkunden: true },
+  { key: '_stand', gruppe: 'Quellen', label: 'Stand', titel: 'Zuletzt abgerufene Quelle zu diesem Angebot', typ: 'datum' }
 ];
+
+function blatt({ id, titel, liste, gruppiert, L }) {
+  const spalten = [...blattSpalten(liste), ...BLATT_ANHANG.filter((s) => !s.nurEndkunden || gruppiert)];
+  const n = spalten.length + 1; // ohne Zeilennummer
+  const klasse = (sp) => [sp.typ === 'text' ? 'breit' : '', sp.typ === 'zahl' || sp.typ === 'datum' ? 'zahl' : '', sp.key === 'status' ? 'st' : ''].filter(Boolean).join(' ');
+  const zelle = (a, sp) => {
+    if (sp.key === '_links') return linkZelle(a, L, 'detailansicht');
+    if (sp.key === '_rechner') { const k = kalkNachAngebot[a.id] || []; return k.length ? `<a href="${L('angebote/' + a.slug)}#rechner">${k.length} ${k.length === 1 ? 'Referenzfall' : 'Referenzfälle'}</a>` : '<span class="leer">–</span>'; }
+    if (sp.key === '_stand') return a.stand ? datum(a.stand) : '<span class="leer">–</span>';
+    return blattZelle(a, sp, L);
+  };
+
+  // Kopf: Spaltenbuchstaben, Merkmalsgruppen, Merkmale
+  const gruppenKoepfe = [];
+  for (const sp of spalten) {
+    const letzte = gruppenKoepfe[gruppenKoepfe.length - 1];
+    if (letzte && letzte.name === sp.gruppe) letzte.n++; else gruppenKoepfe.push({ name: sp.gruppe, n: 1 });
+  }
+  const kopf = `<tr class="buchstaben" aria-hidden="true"><td class="ecke"></td><td>A</td>${spalten.map((_, i) => `<td>${spaltenBuchstabe(i + 1)}</td>`).join('')}</tr>
+        <tr class="gruppen"><td class="nr" aria-hidden="true"></td><th scope="col" class="an" rowspan="2">Anbieter &amp; Angebot</th>${gruppenKoepfe.map((g) => `<th scope="colgroup" colspan="${g.n}">${esc(g.name)}</th>`).join('')}</tr>
+        <tr class="merkmale"><td class="nr" aria-hidden="true"></td>${spalten.map((sp) => `<th scope="col"${klasse(sp) ? ` class="${klasse(sp)}"` : ''} title="${esc(sp.titel)}">${esc(sp.label)}</th>`).join('')}</tr>`;
+
+  let nr = 0;
+  const zeile = (a) => `<tr id="${esc(a.slug)}"${a.oeffentlich ? '' : ' class="entwurf"'}>
+  <td class="nr" aria-hidden="true">${++nr}</td>
+  <th scope="row" class="an">${anbieterAngebot(a, L)}</th>
+  ${spalten.map((sp) => `<td${klasse(sp) ? ` class="${klasse(sp)}"` : ''}>${zelle(a, sp)}</td>`).join('\n  ')}
+</tr>`;
+  const rumpf = gruppiert
+    ? Object.keys(GRUPPE).map((key) => liste.filter((a) => a.grp.key === key)).filter((l) => l.length)
+      .map((l) => `<tr class="gr-zeile"><td class="nr" aria-hidden="true"></td><th scope="rowgroup" colspan="${n}"><span class="gr-innen">${gruppenKopf(l[0].grp)}</span></th></tr>\n${l.map(zeile).join('\n')}`).join('\n')
+    : liste.map(zeile).join('\n');
+
+  return `<section class="blatt-bereich" id="${id}" aria-labelledby="h-${id}">
+  <div class="blatt-leiste">
+    <h2 id="h-${id}">${esc(titel)}</h2>
+    <p class="blatt-mass">${liste.length} Zeilen × ${n} Spalten</p>
+  </div>
+  <div class="tabelle-rahmen blatt">
+    <table class="blatt-tabelle">
+      <caption class="sr">${esc(titel)}: alle erfassten Angaben</caption>
+      <thead>
+        ${kopf}
+      </thead>
+      <tbody>
+${liste.length ? rumpf : `<tr><td class="nr"></td><td colspan="${n}">Die ersten Einträge werden geprüft.</td></tr>`}
+      </tbody>
+    </table>
+  </div>
+</section>`;
+}
 
 function detailseite() {
   const tiefe = 1;
   const L = (z) => link(tiefe, z);
-  const kopf = ['Anbieter & Angebot', 'Status', 'Anlagengröße', ...DETAIL_SPALTEN.map((x) => x.label), 'Anbieterrechner', 'Stand'];
-  const gruppen = Object.keys(GRUPPE).map((key) => ({ g: GRUPPE[key], liste: endkunden.filter((a) => a.grp.key === key) })).filter((x) => x.liste.length);
-  const zeilen = gruppen.map(({ g, liste }) => `<tr class="gr-zeile"><th scope="rowgroup" colspan="${kopf.length}"><span class="gr-innen">${gruppenKopf(g)}</span></th></tr>
-${liste.map((a) => {
-    const lmin = angabenVon(a, 'leistung_min_kwp'), lmax = angabenVon(a, 'leistung_max_kwp');
-    const kalk = kalkNachAngebot[a.id] || [];
-    return `<tr id="${esc(a.slug)}"${a.oeffentlich ? '' : ' class="entwurf"'}>
-  <th scope="row" class="an">${anbieterAngebot(a, L)}</th>
-  <td class="st">${statusZeile(a)}</td>
-  <td class="zahl">${lmin.length || lmax.length ? beleg([...lmin, ...lmax], esc(leistungText(a))) : '<span class="leer">–</span>'}</td>
-  ${DETAIL_SPALTEN.map((sp) => `<td${sp.breit ? ' class="breit"' : ''}>${alleWerte(a, sp.key) || '<span class="leer">–</span>'}</td>`).join('\n  ')}
-  <td>${kalk.length ? `<a href="${L('angebote/' + a.slug)}#rechner">${kalk.length} ${kalk.length === 1 ? 'Referenzfall' : 'Referenzfälle'}</a>` : '<span class="leer">–</span>'}</td>
-  <td class="zahl meta">${datum(a.stand)}</td>
-</tr>`;
-  }).join('\n')}`).join('\n');
-
+  const bereiche = [
+    { id: 'endkunden', titel: BEREICH.endkunden, liste: endkunden, gruppiert: true },
+    { id: 'installateure', titel: BEREICH.installateure, liste: installateure },
+    { id: 'anbieter', titel: BEREICH.dienstleister, liste: dienstleister }
+  ];
   const inhalt = `
-<section class="auftakt auftakt-klein">
-  <div class="rahmen">
-    <h1>Detailansicht</h1>
-    <p class="lead">Alle erfassten Angaben zu Bedingungen und Preisen der Angebote für Endkunden. Zeiger auf eine Angabe zeigt ihre Quelle; Wortlaut und frühere Stände auf den Seiten der einzelnen Angebote.</p>
-  </div>
-</section>
 <div class="rahmen rahmen-breit detail">
-  <div class="abschnitt-kopf">
-    <p class="meta">${endkunden.length} Angebote · Reihenfolge wie in der Übersicht · Datenstand ${datum(STAND)}</p>
+  <div class="blatt-kopf">
+    <div>
+      <h1>Detailansicht</h1>
+      <p class="blatt-lead">Alle erfassten Angaben je Angebot, gegliedert wie die Übersicht. Spaltenköpfe zeigen beim Überfahren die Definition, Angaben ihre Quelle. Wortlaut und frühere Stände auf den Seiten der einzelnen Angebote.</p>
+    </div>
     ${ansichtWechsel(L, 'detail')}
   </div>
+  <nav class="blatt-reiter" aria-label="Bereiche">
+    ${bereiche.map((b) => `<a href="#${b.id}">${esc(b.titel.replace('Angebote für ', ''))}</a>`).join('\n    ')}
+    <span class="blatt-stand">Datenstand ${datum(STAND)}</span>
+  </nav>
   ${kiHinweis()}
-  <div class="tabelle-rahmen tabelle-breit">
-    <table class="details">
-      <caption class="sr">Bedingungen und Preise der Angebote für Endkunden</caption>
-      <thead><tr>${kopf.map((k) => `<th scope="col">${esc(k)}</th>`).join('')}</tr></thead>
-      <tbody>
-${zeilen || `<tr><td colspan="${kopf.length}">Die ersten Einträge werden geprüft.</td></tr>`}
-      </tbody>
-    </table>
-  </div>
-  <p class="anmerkung">„–“: noch nicht erfasst. Preise wie vom Anbieter angegeben, brutto oder netto laut Quelle; „Nicht veröffentlicht“: Die Quelle nennt den Wert nicht. Die Tabelle zeigt Bedingungen, keine Erlöse. Definitionen der Merkmale in der <a href="${L('methodik')}">Methodik</a>.</p>
+  ${bereiche.map((b) => blatt({ ...b, L })).join('\n')}
+  <p class="anmerkung">„–“: noch nicht erfasst. „Nicht veröffentlicht“: Die Quelle nennt den Wert nicht. Preise wie vom Anbieter angegeben, brutto oder netto laut Quelle. Ein intelligentes Messsystem zählt nicht als Kopplung, solange es von einem beliebigen Messstellenbetreiber stammen kann. Die Tabelle zeigt Bedingungen, keine Erlöse. Definitionen der Merkmale in der <a href="${L('methodik')}">Methodik</a>.</p>
 </div>`;
-  return seite({ tiefe, titel: 'Detailansicht', kanonisch: 'detailansicht', aktiv: 'detail', inhalt, beschreibung: 'Bedingungen und Preise aller Angebote zur Direktvermarktung kleiner PV-Anlagen, jede Angabe mit Quelle.' });
+  return seite({ tiefe, titel: 'Detailansicht', kanonisch: 'detailansicht', aktiv: 'detail', inhalt, beschreibung: 'Alle erfassten Angaben zu Angeboten der Direktvermarktung kleiner PV-Anlagen als Tabelle: Verfügbarkeit, Voraussetzungen, Vergütung, Kosten und Vertrag, jede Angabe mit Quelle.' });
 }
 
 // ---------------------------------------------------------------------------
