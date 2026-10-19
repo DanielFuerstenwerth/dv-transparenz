@@ -87,6 +87,10 @@ Die Übersicht gliedert Angebote für Endkunden nach dem Merkmal `kopplung` („
 
 Die Merkmale `stromliefervertrag`, `zusatzhardware`, `speicher` und `anlage_vom_anbieter` werden weiter erfasst und stehen in der Detailansicht; sie bestimmen die Gruppe nicht mehr.
 
+## Pilotprojekte und befristete Aktionen (seit 19.10.2026)
+
+Vorgabe Daniel: Pilotprojekte und befristete Aktionen werden aufgenommen, aber nicht nach Kopplung eingereiht. Sie erhalten das Merkmal `angebotsform` mit `wert_auswahl = '{pilot_aktion}'` (mit Quelle) und stehen in der Übersicht und Detailansicht in einer eigenen Gruppe „Pilotprojekte und befristete Aktionen“ am Ende der Liste, alphabetisch. `kopplung` wird trotzdem erfasst und erscheint bei den Einschränkungen. Pilotprojekte zählen nicht in die Kennzahlen der Startseite. Ohne Angabe zu `angebotsform` gilt ein Angebot als regulär. Unklarheit, ob ein Pilot bereits Direktvermarktung im Sinne des EEG ist, steht in `hinweis`, verhindert die Aufnahme aber nicht.
+
 ## Anbieter und Angebote
 
 `organisation` enthält die Anbieter (Unternehmen), `angebot` deren Angebote (Produkte); ein Anbieter kann mehrere Angebote haben (etwa Octopus Energy: SolarUp und Zero Bills). Die Kennzahlen der Startseite zählen Anbieter, nicht Angebote. Marken stehen als eigener Anbieter mit dem rechtlichen Namen des Unternehmens (LUOX Energy, rechtlich Lumenaza GmbH). Übersicht in der Sicht `v_anbieter`.
