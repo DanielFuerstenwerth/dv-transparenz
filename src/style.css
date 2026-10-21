@@ -492,3 +492,9 @@ blockquote { margin: 6px 0 0; padding: 2px 0 2px 12px; border-left: 2px solid va
 .dl-vorbehalt { display: block; margin-top: 6px; font-size: 13px; color: var(--blaugrau); }
 .dl-tabelle tr.dl-unklar th, .dl-tabelle tr.dl-unklar td { border-top: 1px dashed var(--linie); }
 @media (max-width: 800px) { .dl-tabelle { min-width: 0; } .dl-tabelle td.dl-umfang, .dl-tabelle td.dl-ziel { min-width: 0; } }
+
+/* Hinweis auf Kooperationen (unter der Tabelle der Startseite) */
+.kooperation { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 18px; font-size: 14px; line-height: 1.5; color: var(--tinte); border-top: 1px solid var(--linie); border-bottom: 1px solid var(--linie); padding: 12px 0; margin: 28px 0 0; max-width: 1100px; }
+.kooperation .k { font-family: var(--mono); font-size: 11px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--blaugrau); }
+.kooperation span:last-child { flex: 1 1 40ch; }
+.kooperation a { color: var(--navy); }

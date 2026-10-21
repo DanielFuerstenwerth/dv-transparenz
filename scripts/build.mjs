@@ -485,6 +485,11 @@ function ansichtWechsel(L, aktiv) {
     </nav>`;
 }
 
+// Hinweis auf Kooperationen zur Einbindung auf anderen Websites
+function kooperation() {
+  return `<p class="kooperation"><span class="k">Für Websites</span><span>Übersicht und Daten können auf anderen Websites eingebunden werden, laufend aktualisiert und mit Quellen. Anfragen zur Kooperation bitte an <a href="mailto:${esc(cfg.hinweisEmail)}?subject=${encodeURIComponent('Kooperation ' + cfg.portalName)}">${esc(cfg.hinweisEmail)}</a>.</span></p>`;
+}
+
 function kiHinweis() {
   return `<p class="ki-hinweis" role="note">Recherche zu Angeboten durch KI – ohne Garantie. Korrekturen bitte an <a href="mailto:${esc(cfg.hinweisEmail)}">${esc(cfg.hinweisEmail)}</a></p>`;
 }
@@ -712,6 +717,7 @@ ${endkunden.length ? zeilen : '<tr><td colspan="7">Die ersten Einträge werden g
       </table>
     </div>
     <p class="anmerkung">Ein intelligentes Messsystem ist für die Direktvermarktung fast immer erforderlich und zählt nicht als Kopplung, solange es von einem beliebigen Messstellenbetreiber stammen kann. Preise wie vom Anbieter angegeben, brutto oder netto laut Quelle. Alle Preisangaben in der <a href="${L('detailansicht')}">Detailansicht</a>, Regeln in der <a href="${L('methodik')}">Methodik</a>. Datenstand ${datum(STAND)}.</p>
+    ${kooperation()}
   </div>
 </section>
 
@@ -1253,8 +1259,9 @@ ${liste}
 <h2>Verknüpfung</h2>
 <p>Die Spalte <code>kategorie</code> in <code>angebote.csv</code> nennt den Bereich: <code>endkunden</code> (Angebote für Endkunden), <code>installateure</code> (Angebote für Installateure) und <code>dienstleister</code> (Angebote für Anbieter für Direktvermarktung).</p>
 <p>Angaben verweisen über <code>angebot</code> auf die Angebote und über <code>quelle_id</code> auf die Quellen. Bedeutung und Ausprägungen der Merkmale stehen in <code>merkmale.csv</code> und auf der Seite <a href="${L('methodik')}">Methodik</a>.</p>
-<h2>Quellenangabe</h2>
-<p>Bei Verwendung bitte angeben: ${esc(cfg.portalName)}, ${esc(cfg.betreiber.name)}, Datenstand ${datum(STAND)}, ${esc(cfg.siteUrl.replace('https://', ''))}.</p>
+<h2>Nutzung</h2>
+<p>Die Daten können für eigene Auswertungen genutzt werden, mit Quellenangabe: ${esc(cfg.portalName)}, ${esc(cfg.betreiber.name)}, Datenstand ${datum(STAND)}, ${esc(cfg.siteUrl.replace('https://', ''))}.</p>
+<p>Veröffentlichung der Daten oder Einbindung auf anderen Websites nach Absprache. Anfragen zur Kooperation bitte an <a href="mailto:${esc(cfg.hinweisEmail)}?subject=${encodeURIComponent('Kooperation ' + cfg.portalName)}">${esc(cfg.hinweisEmail)}</a>.</p>
 </div>`;
   return seite({ tiefe, titel: 'Daten', kanonisch: 'daten', aktiv: 'daten', inhalt, beschreibung: 'Alle Angaben zur Direktvermarktung kleiner PV-Anlagen als CSV und JSON, einschließlich früherer Stände.' });
 }
