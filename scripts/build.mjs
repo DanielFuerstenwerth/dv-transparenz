@@ -717,7 +717,6 @@ ${endkunden.length ? zeilen : '<tr><td colspan="7">Die ersten Einträge werden g
       </table>
     </div>
     <p class="anmerkung">Ein intelligentes Messsystem ist für die Direktvermarktung fast immer erforderlich und zählt nicht als Kopplung, solange es von einem beliebigen Messstellenbetreiber stammen kann. Preise wie vom Anbieter angegeben, brutto oder netto laut Quelle. Alle Preisangaben in der <a href="${L('detailansicht')}">Detailansicht</a>, Regeln in der <a href="${L('methodik')}">Methodik</a>. Datenstand ${datum(STAND)}.</p>
-    ${kooperation()}
   </div>
 </section>
 
@@ -754,7 +753,11 @@ ${dl || '<tr><td colspan="4">Die ersten Einträge werden geprüft.</td></tr>'}
     <h2 id="h-hinweis">Angebot fehlt oder Angabe veraltet?</h2>
     <p>Hinweise bitte mit Beleg an <a href="mailto:${esc(cfg.hinweisEmail)}">${esc(cfg.hinweisEmail)}</a>. Jede übernommene Änderung erscheint mit Anlass und Datum im <a href="${L('aenderungen')}">Änderungsprotokoll</a>.</p>
   </div>
-</section>`;
+</section>
+
+<div class="rahmen kooperation-rahmen">
+  ${kooperation()}
+</div>`;
 
   return seite({
     tiefe, titel: null, kanonisch: '', aktiv: 'start', inhalt,
