@@ -1,10 +1,17 @@
--- NOCH NICHT ANGEWENDET. Freigabe der vorläufigen SpotmyEnergy-Angaben (Sandbox-Vorschlag
--- 'spotmyenergy-2026-09-29') nach public.angabe. Quelle: E-Mail von SpotmyEnergy an dv@1000gw.de.
--- Erst ausführen, wenn Daniel den Vorschlag freigegeben hat.
--- Die Angaben erscheinen danach im Änderungsprotokoll (Anlass: Mitteilung des Anbieters).
+-- NOCH NICHT ANGEWENDET. Freigabe der SpotmyEnergy-Mitteilung (Stand 29.09.2026).
+-- Quelle: E-Mail von SpotmyEnergy an dv@1000gw.de. Erst ausführen, wenn Daniel freigegeben hat.
+-- Am besten im Supabase-SQL-Editor ausführen (ein Durchlauf).
+--
+-- Enthält zwei Teile:
+--   1) Änderungen am bestehenden Eintrag „SmartFlux" (wird eigenständig, Gruppe „Ohne weitere Produkte").
+--   2) Veröffentlichung des neuen Eintrags „SmartFlux mit Spot-Stromtarif" (Gruppe „… Stromtarif …").
+--
+-- Maßgeblich ist der Sandbox-Stapel 'spotmyenergy-2026-10-21'. Ein früherer Stapel
+-- 'spotmyenergy-2026-09-29' in intern.angabe_sandbox ist überholt und wird NICHT übernommen.
 
 begin;
 
+-- 1) Bestehenden Eintrag fortschreiben (aus der Sandbox), jeweils als Fortschreibung der aktuellen Angabe
 insert into public.angabe
   (angebot_id, merkmal_key, status, wert_text, wert_zahl, wert_bool, wert_datum, wert_auswahl,
    einheit, steuer, originalwortlaut, kwp_von, kwp_bis, netzgebiet, bedingung, gueltig_ab,
@@ -19,16 +26,22 @@ select
        else null end,
   s.anmerkung, s.startbestand
 from intern.angabe_sandbox s
-where s.vorschlag = 'spotmyenergy-2026-09-29'
+where s.vorschlag = 'spotmyenergy-2026-10-21'
   and s.uebernommen_am is null
 order by (select sortierung from public.merkmal m where m.key = s.merkmal_key);
 
 update intern.angabe_sandbox
    set uebernommen_am = now()
- where vorschlag = 'spotmyenergy-2026-09-29' and uebernommen_am is null;
+ where vorschlag = 'spotmyenergy-2026-10-21' and uebernommen_am is null;
+
+-- 2) Neuen Eintrag veröffentlichen
+update public.angebot
+   set oeffentlich = true, aufgenommen_am = current_date
+ where slug = 'spotmyenergy-smartflux-stromtarif' and oeffentlich = false;
 
 commit;
 
--- Danach läuft der nächste Website-Neubau automatisch (stündlich) oder sofort über „Run workflow".
--- Prüfen: SpotmyEnergy steht dann in der Gruppe „Ohne weitere Produkte" (nach erster
--- Veröffentlichung einsortiert, 29.09.2026), und das Änderungsprotokoll zeigt die Korrekturen.
+-- Danach läuft der nächste Website-Neubau (stündlich) oder sofort über „Run workflow".
+-- Prüfen: „SmartFlux" steht in „Ohne weitere Produkte" (nach dem 29.09.2026 einsortiert),
+-- „SmartFlux mit Spot-Stromtarif" in „Gekoppelt an Stromtarif und/oder Messstellenbetrieb";
+-- das Änderungsprotokoll zeigt die Korrekturen (Anlass: Mitteilung des Anbieters) und die Aufnahme.
