@@ -325,6 +325,8 @@ const BEREICH = {
   dienstleister: 'Angebote für Anbieter für Direktvermarktung'
 };
 
+const BEREICHE_REIHENFOLGE = ['endkunden', 'installateure', 'dienstleister'];
+
 const umfangUnklar = (a) => { const l = angabenVon(a, 'leistungsumfang'); return l.length > 0 && l.every((x) => x.status === 'unklar'); };
 const anbieterName = (a) => `${a.organisation?.name || ''} ${a.name}`;
 const sortierteAngebote = (kat) => angebote
@@ -1038,15 +1040,15 @@ ${quellenHtml}
 function aenderungsseite() {
   const tiefe = 1;
   const L = (z) => link(tiefe, z);
-  // Anbieter vor dem Angebot nennen, sofern der Name ihn nicht schon enthält; Bereich, wenn nicht Endkunden
+  // Anbieter vor dem Angebot nennen, sofern der Name ihn nicht schon enthält; den Bereich nennt die Gruppenüberschrift
   const anzeige = (id, nameFallback) => {
     const an = angebotById[id];
     const name = an?.name || nameFallback || '';
     const org = an?.organisation?.name || '';
     const mitOrg = org && !name.toLowerCase().startsWith(org.toLowerCase()) ? `${org} · ${name}` : name;
-    const bereich = an && an.kategorie_key !== 'endkunden' ? ` <span class="meta-inline">${esc(BEREICH[an.kategorie_key] || '')}</span>` : '';
-    return `<a href="${L('angebote/' + (an?.slug || ''))}">${esc(mitOrg)}</a>${bereich}`;
+    return `<a href="${L('angebote/' + (an?.slug || ''))}">${esc(mitOrg)}</a>`;
   };
+  const bereichVon = (id) => angebotById[id]?.kategorie_key || null;
   const eintraege = [];
   const protokoll = daten.aenderungsprotokoll.filter((x) => !x.startbestand);
   const neu = group(protokoll.filter((x) => x.aenderungsart === 'neu'), (x) => isoTag(x.erfasst_am) + '|' + x.angebot_id);
@@ -1054,7 +1056,7 @@ function aenderungsseite() {
     const [tag, id] = k.split('|');
     const an = angebotById[id];
     const art = an && isoTag(an.aufgenommen_am) === tag ? 'Aufgenommen' : 'Ergänzt';
-    eintraege.push({ tag, sort: tag + ' 0', art, html: `${anzeige(id, liste[0].angebot_name)} <span class="meta">${liste.length} ${liste.length === 1 ? 'Angabe' : 'Angaben'}</span>` });
+    eintraege.push({ tag, sort: tag + ' 0', art, bereich: bereichVon(id), html: `${anzeige(id, liste[0].angebot_name)} <span class="meta">${liste.length} ${liste.length === 1 ? 'Angabe' : 'Angaben'}</span>` });
   }
   for (const x of protokoll.filter((y) => y.aenderungsart !== 'neu')) {
     const m = merkmale[x.merkmal_key];
@@ -1062,14 +1064,14 @@ function aenderungsseite() {
     const nachher = wertText(x, m);
     const g2 = geltung(x);
     eintraege.push({
-      tag: isoTag(x.erfasst_am), sort: x.erfasst_am, art: AENDERUNGSART[x.aenderungsart],
+      tag: isoTag(x.erfasst_am), sort: x.erfasst_am, art: AENDERUNGSART[x.aenderungsart], bereich: bereichVon(x.angebot_id),
       html: `${anzeige(x.angebot_id, x.angebot_name)} · ${esc(x.merkmal_bezeichnung)}: ${vorher ? `<del>${esc(vorher)}</del> → ` : ''}<ins>${esc(nachher)}</ins>${g2 ? ` <span class="geltung">${esc(g2)}</span>` : ''}${x.gueltig_ab && x.aenderungsart === 'aenderung_anbieter' ? ` <span class="meta">gültig ab ${datum(x.gueltig_ab)}</span>` : ''}<span class="meta">Anlass: ${esc(ANLASS[x.ausgeloest_durch] || x.ausgeloest_durch)}${x.quelle_url ? ` · <a href="${esc(x.quelle_url)}" rel="noopener" target="_blank">Quelle</a>` : ''}${x.anmerkung ? ' · ' + esc(x.anmerkung) : ''}</span>`
     });
   }
   for (const k of daten.kalkulator) {
     const an = angebotById[k.angebot_id];
     if (!an) continue;
-    eintraege.push({ tag: isoTag(k.erfasst_am), sort: k.erfasst_am, art: k.aenderungsart === 'korrektur' ? 'Korrektur Rechnerabfrage' : 'Rechnerabfrage', html: `<a href="${L('angebote/' + an.slug)}">${esc(an.name)}</a> · ${esc(referenzfaelle[k.referenzfall_key]?.bezeichnung || 'Eigene Eingaben')}: ${esc(k.ergebnis_kurz || '')} <span class="meta">abgefragt ${datum(k.abgefragt_am)}</span>` });
+    eintraege.push({ tag: isoTag(k.erfasst_am), sort: k.erfasst_am, art: k.aenderungsart === 'korrektur' ? 'Korrektur Rechnerabfrage' : 'Rechnerabfrage', bereich: an.kategorie_key, html: `<a href="${L('angebote/' + an.slug)}">${esc(an.name)}</a> · ${esc(referenzfaelle[k.referenzfall_key]?.bezeichnung || 'Eigene Eingaben')}: ${esc(k.ergebnis_kurz || '')} <span class="meta">abgefragt ${datum(k.abgefragt_am)}</span>` });
   }
   // Startbestand: alles bis einschließlich cfg.startbestandBis erscheint als ein Eintrag
   const startBis = cfg.startbestandBis;
@@ -1081,19 +1083,29 @@ function aenderungsseite() {
       const dl = imStart.filter((a) => a.kategorie_key === 'dienstleister').length;
       const ins = imStart.filter((a) => a.kategorie_key === 'installateure').length;
       for (let i = eintraege.length - 1; i >= 0; i--) if (eintraege[i].tag <= startBis) eintraege.splice(i, 1);
-      eintraege.push({ tag: startBis, sort: startBis + ' 0', art: 'Startbestand', html: `Erste Veröffentlichung mit ${ek} Angeboten für Endkunden${ins ? `, ${ins} für Installateure` : ''} und ${dl} für Anbieter für Direktvermarktung (damals „für Unternehmen“). Änderungen werden ab dem Folgetag einzeln dokumentiert; Bearbeitungsstände vor der Veröffentlichung stehen in der Datei <a href="${L('daten/aenderungen.csv')}">aenderungen.csv</a>.` });
+      eintraege.push({ tag: startBis, sort: startBis + ' 0', art: 'Startbestand', bereich: null, html: `Erste Veröffentlichung mit ${ek} Angeboten für Endkunden${ins ? `, ${ins} für Installateure` : ''} und ${dl} für Anbieter für Direktvermarktung (damals „für Unternehmen“). Änderungen werden ab dem Folgetag einzeln dokumentiert; Bearbeitungsstände vor der Veröffentlichung stehen in der Datei <a href="${L('daten/aenderungen.csv')}">aenderungen.csv</a>.` });
     }
   }
   eintraege.sort((a, b) => String(b.sort).localeCompare(String(a.sort)));
   const nachTag = group(eintraege, (e) => e.tag);
-  const html = Object.keys(nachTag).sort().reverse().map((tag) => `<section class="tag"><h2>${datum(tag)}</h2><ul class="protokoll">
-${nachTag[tag].map((e) => `<li><span class="art">${esc(e.art)}</span><span class="was">${e.html}</span></li>`).join('\n')}
-</ul></section>`).join('\n');
+  const liste = (es) => `<ul class="protokoll">
+${es.map((e) => `<li><span class="art">${esc(e.art)}</span><span class="was">${e.html}</span></li>`).join('\n')}
+</ul>`;
+  const html = Object.keys(nachTag).sort().reverse().map((tag) => {
+    const desTages = nachTag[tag];
+    // Einträge ohne Bereich (etwa der Startbestand) stehen vor den Bereichen
+    const ohne = desTages.filter((e) => !e.bereich);
+    const bloecke = BEREICHE_REIHENFOLGE
+      .filter((kat) => desTages.some((e) => e.bereich === kat))
+      .map((kat) => `<h3 class="bereich">${esc(BEREICH[kat])}</h3>${liste(desTages.filter((e) => e.bereich === kat))}`)
+      .join('\n');
+    return `<section class="tag"><h2>${datum(tag)}</h2>${ohne.length ? liste(ohne) : ''}${bloecke}</section>`;
+  }).join('\n');
 
   const inhalt = `
 <section class="auftakt auftakt-klein"><div class="rahmen">
   <h1>Änderungsprotokoll</h1>
-  <p class="lead">Jede Angabe wird fortgeschrieben, nicht überschrieben. Änderungen der Anbieter und Korrekturen des Portals sind getrennt gekennzeichnet.</p>
+  <p class="lead">Jede Angabe wird fortgeschrieben, nicht überschrieben. Änderungen der Anbieter und Korrekturen des Portals sind getrennt gekennzeichnet. Je Tag sind die Einträge nach den drei Bereichen getrennt.</p>
 </div></section>
 <div class="rahmen schmal detail">
 ${html || '<p>Noch keine Einträge.</p>'}

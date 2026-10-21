@@ -264,6 +264,8 @@ blockquote { margin: 6px 0 0; padding: 2px 0 2px 12px; border-left: 2px solid va
 /* Protokoll */
 .tag { margin-bottom: 36px; }
 .tag h2 { font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; padding-bottom: 8px; border-bottom: 1px solid var(--navy); }
+.tag h3.bereich { font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--blaugrau); margin: 20px 0 0; }
+.tag h3.bereich:first-of-type { margin-top: 12px; }
 .protokoll { list-style: none; padding: 0; margin: 0; }
 .protokoll li { display: grid; grid-template-columns: 12em 1fr; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--linie); font-size: var(--fs-tabelle); }
 .protokoll .art { color: var(--blaugrau); font-size: var(--fs-meta); }
