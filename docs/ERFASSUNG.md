@@ -12,6 +12,12 @@ Verbindliche Regeln für alle, die Daten im Transparenzportal Direktvermarktung 
 6. **Neutral.** Keine Bewertungen, keine Empfehlungen, keine Adjektive wie „günstig“ oder „attraktiv“.
 7. **Keine personenbezogenen Daten** in öffentlichen Tabellen. Hinweise von Personen gehören in `intern.rueckmeldung`.
 8. **Neue Angebote immer als Entwurf** (`oeffentlich = false`). Veröffentlicht wird erst nach Freigabe durch Daniel: `update public.angebot set oeffentlich = true, aufgenommen_am = current_date where slug = '…';`
+9. **Datenbank ist die einzige Quelle der Wahrheit** für die Angebotsdaten. Projektdokumente führen keine Zweitliste der Angebote; der aktuelle Stand ergibt sich aus der Datenbank, der Live-Seite, dem Änderungsprotokoll und den Downloads.
+
+## Entscheidungen und Konsistenz
+
+- **Entscheidungen dokumentieren.** Jede inhaltliche Entscheidung (Einordnung, Aufnahme, Ablehnung) wird mit Begründung im Entscheidungsprotokoll des Projektstands festgehalten, einschließlich geprüfter, aber nicht aufgenommener Anbieter. Soweit die Begründung eine Angabe betrifft, gehört sie zusätzlich in `anmerkung`.
+- **Vor der Umsetzung auf Widersprüche prüfen.** Eine Vorgabe wird vor der Ausführung gegen die dokumentierten Entscheidungen und gegen die Datenbank geprüft. Steht sie im Widerspruch zu einer früheren Entscheidung, zu einer Regel oder zu erfassten Daten, wird der Widerspruch Daniel genannt und nachgefragt, nicht stillschweigend ausgeführt. Das gilt auch für Vorgaben von Daniel selbst.
 
 ## Datenmodell
 
