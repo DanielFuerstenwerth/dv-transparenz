@@ -1363,6 +1363,21 @@
       "geaendert_am": "2026-10-21T08:39:42.795464+00:00"
     },
     {
+      "id": "3ad68cef-ac40-4226-a299-1c1d6da513cf",
+      "typ": "anbieterauskunft",
+      "titel": "E-Mail von Solarize an dv@1000gw.de",
+      "url": null,
+      "herausgeber": "Solarize",
+      "organisation_id": "da464e8f-95a9-49c3-90f6-f8fbfcd31e66",
+      "veroeffentlicht_am": "2026-10-21",
+      "abgerufen_am": "2026-10-21",
+      "archiv_url": null,
+      "beleg_pfad": null,
+      "notiz": "Mitteilung des Anbieters per E-Mail an dv@1000gw.de vom 21.10.2026 zu Verfügbarkeit, Leistungsumfang und Zielkunden der Abrechnung in der Direktvermarktung.",
+      "erstellt_am": "2026-10-21T09:12:19.115158+00:00",
+      "geaendert_am": "2026-10-21T13:17:13.437143+00:00"
+    },
+    {
       "id": "504080bd-d776-49bb-8e89-cfc54194dcfc",
       "typ": "pressemitteilung",
       "titel": "Pressemitteilung von beegy zur Direktvermarktung über das HEMS",
@@ -1436,21 +1451,6 @@
       "notiz": null,
       "erstellt_am": "2026-10-21T10:09:08.025958+00:00",
       "geaendert_am": "2026-10-21T10:09:08.025958+00:00"
-    },
-    {
-      "id": "3ad68cef-ac40-4226-a299-1c1d6da513cf",
-      "typ": "anbieterauskunft",
-      "titel": "E-Mail von Solarize an dv@1000gw.de",
-      "url": null,
-      "herausgeber": "Solarize",
-      "organisation_id": "da464e8f-95a9-49c3-90f6-f8fbfcd31e66",
-      "veroeffentlicht_am": null,
-      "abgerufen_am": "2026-10-21",
-      "archiv_url": null,
-      "beleg_pfad": null,
-      "notiz": "Mitteilung des Anbieters per E-Mail an dv@1000gw.de zu Verfügbarkeit, Leistungsumfang und Zielkunden der Abrechnung in der Direktvermarktung.",
-      "erstellt_am": "2026-10-21T09:12:19.115158+00:00",
-      "geaendert_am": "2026-10-21T09:12:19.115158+00:00"
     },
     {
       "id": "c7707750-5ac7-42d3-852e-feb9e5e48466",
