@@ -1263,8 +1263,8 @@ ${liste}
 <p>Die Spalte <code>kategorie</code> in <code>angebote.csv</code> nennt den Bereich: <code>endkunden</code> (Angebote für Endkunden), <code>installateure</code> (Angebote für Installateure) und <code>dienstleister</code> (Angebote für Anbieter für Direktvermarktung).</p>
 <p>Angaben verweisen über <code>angebot</code> auf die Angebote und über <code>quelle_id</code> auf die Quellen. Bedeutung und Ausprägungen der Merkmale stehen in <code>merkmale.csv</code> und auf der Seite <a href="${L('methodik')}">Methodik</a>.</p>
 <h2>Nutzung</h2>
-<p>Die Daten können für eigene Auswertungen genutzt werden, mit Quellenangabe: ${esc(cfg.portalName)}, ${esc(cfg.betreiber.name)}, Datenstand ${datum(STAND)}, ${esc(cfg.siteUrl.replace('https://', ''))}.</p>
-<p>Veröffentlichung der Daten oder Einbindung auf anderen Websites nach Absprache. Anfragen zur Kooperation bitte an <a href="mailto:${esc(cfg.hinweisEmail)}?subject=${encodeURIComponent('Kooperation ' + cfg.portalName)}">${esc(cfg.hinweisEmail)}</a>.</p>
+<p>Für nicht kommerzielle Zwecke, etwa Forschung, Lehre, Berichterstattung und private Auswertungen, stehen die Daten mit Quellenangabe zur Verfügung: ${esc(cfg.portalName)}, ${esc(cfg.betreiber.name)}, Datenstand ${datum(STAND)}, ${esc(cfg.siteUrl.replace('https://', ''))}.</p>
+<p>Kommerzielle Nutzung, Veröffentlichung der Daten und Einbindung auf anderen Websites nach Absprache. Anfragen zur Kooperation bitte an <a href="mailto:${esc(cfg.hinweisEmail)}?subject=${encodeURIComponent('Kooperation ' + cfg.portalName)}">${esc(cfg.hinweisEmail)}</a>.</p>
 </div>`;
   return seite({ tiefe, titel: 'Daten', kanonisch: 'daten', aktiv: 'daten', inhalt, beschreibung: 'Alle Angaben zur Direktvermarktung kleiner PV-Anlagen als CSV und JSON, einschließlich früherer Stände.' });
 }
