@@ -776,6 +776,7 @@ ${dl || '<tr><td colspan="4">Die ersten Einträge werden geprüft.</td></tr>'}
 const SPALTE_KURZ = {
   status: 'Status',
   start_angekuendigt: 'Start angekündigt',
+  vermarktung_ab: 'Vermarktung ab',
   verfuegbar_seit: 'Buchbar seit',
   erstmals_veroeffentlicht: 'Erstmals veröffentlicht',
   verfuegbarkeit_regional: 'Regional',
@@ -1051,7 +1052,14 @@ function aenderungsseite() {
   const bereichVon = (id) => angebotById[id]?.kategorie_key || null;
   const eintraege = [];
   const protokoll = daten.aenderungsprotokoll.filter((x) => !x.startbestand);
-  const neu = group(protokoll.filter((x) => x.aenderungsart === 'neu'), (x) => isoTag(x.erfasst_am) + '|' + x.angebot_id);
+  // Angaben, die als Entwurf vor der Aufnahme erfasst wurden, erscheinen am Tag der Aufnahme
+  // (sonst stünde ein später freigegebener Entwurf als „Ergänzt“ an einem Tag, an dem er noch nicht online war)
+  const protokollTag = (x) => {
+    const tag = isoTag(x.erfasst_am);
+    const auf = angebotById[x.angebot_id]?.aufgenommen_am;
+    return auf && isoTag(auf) > tag ? isoTag(auf) : tag;
+  };
+  const neu = group(protokoll.filter((x) => x.aenderungsart === 'neu'), (x) => protokollTag(x) + '|' + x.angebot_id);
   for (const [k, liste] of Object.entries(neu)) {
     const [tag, id] = k.split('|');
     const an = angebotById[id];
@@ -1064,7 +1072,7 @@ function aenderungsseite() {
     const nachher = wertText(x, m);
     const g2 = geltung(x);
     eintraege.push({
-      tag: isoTag(x.erfasst_am), sort: x.erfasst_am, art: AENDERUNGSART[x.aenderungsart], bereich: bereichVon(x.angebot_id),
+      tag: protokollTag(x), sort: protokollTag(x) === isoTag(x.erfasst_am) ? x.erfasst_am : protokollTag(x) + ' 1', art: AENDERUNGSART[x.aenderungsart], bereich: bereichVon(x.angebot_id),
       html: `${anzeige(x.angebot_id, x.angebot_name)} · ${esc(x.merkmal_bezeichnung)}: ${vorher ? `<del>${esc(vorher)}</del> → ` : ''}<ins>${esc(nachher)}</ins>${g2 ? ` <span class="geltung">${esc(g2)}</span>` : ''}${x.gueltig_ab && x.aenderungsart === 'aenderung_anbieter' ? ` <span class="meta">gültig ab ${datum(x.gueltig_ab)}</span>` : ''}<span class="meta">Anlass: ${esc(ANLASS[x.ausgeloest_durch] || x.ausgeloest_durch)}${x.quelle_url ? ` · <a href="${esc(x.quelle_url)}" rel="noopener" target="_blank">Quelle</a>` : ''}${x.anmerkung ? ' · ' + esc(x.anmerkung) : ''}</span>`
     });
   }
@@ -1162,7 +1170,7 @@ function methodikseite() {
 </section>
 <section>
 <h2>Änderungen und Korrekturen</h2>
-<p>Angaben werden nicht überschrieben, sondern fortgeschrieben. Das <a href="${L('aenderungen')}">Änderungsprotokoll</a> unterscheidet Änderungen durch den Anbieter, die ab einem bestimmten Datum gelten, von Korrekturen und Präzisierungen durch das Portal. Der Startbestand vom ${datum(cfg.startbestandBis || '')} erscheint dort als ein Eintrag; seitdem wird jede Änderung mit Datum einzeln aufgeführt.</p>
+<p>Angaben werden nicht überschrieben, sondern fortgeschrieben. Das <a href="${L('aenderungen')}">Änderungsprotokoll</a> unterscheidet Änderungen durch den Anbieter, die ab einem bestimmten Datum gelten, von Korrekturen und Präzisierungen durch das Portal. Der Startbestand vom ${datum(cfg.startbestandBis || '')} erscheint dort als ein Eintrag; seitdem wird jede Änderung mit Datum einzeln aufgeführt. Neue Angebote werden vor der Veröffentlichung als Entwurf erfasst und erscheinen im Protokoll am Tag ihrer Aufnahme.</p>
 <p>Hinweise von Anbietern, Nutzerinnen und Nutzern oder Dritten bitte mit Beleg an <a href="mailto:${esc(cfg.hinweisEmail)}">${esc(cfg.hinweisEmail)}</a>. Übernommene Hinweise erscheinen mit ihrem Anlass im Protokoll.</p>
 </section>
 <section id="referenzfaelle">

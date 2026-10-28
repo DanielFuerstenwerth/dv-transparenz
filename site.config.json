@@ -47,6 +47,10 @@
     {
       "datum": "2026-10-19",
       "text": "Der Bereich „Angebote für Anbieter für Direktvermarktung“ ist nun eine Tabelle; Angebote mit unklarem Leistungsumfang stehen am Ende des Bereichs und sind mit „unklar“ und einem Vorbehalt gekennzeichnet."
+    },
+    {
+      "datum": "2026-10-31",
+      "text": "Neues Merkmal „Beginn der Vermarktung“: ab wann der Anbieter den Strom tatsächlich vermarktet oder vergütet, wenn das vom Vertragsabschluss oder von der Buchbarkeit abweicht. Angebote, die vor ihrer Aufnahme als Entwurf erfasst wurden, erscheinen im Änderungsprotokoll am Tag der Aufnahme."
     }
   ],
   "startbestandBis": "2026-10-16"
