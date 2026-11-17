@@ -73,9 +73,13 @@ where an.slug = 'spotmyenergy-smartflux' and a.merkmal_key = 'entgelt_grund';
 
 Bewusste Bereinigung von Fehleingaben (nur Daniel): `set local dv.wartung = 'an';` in derselben Transaktion. Jede Änderung landet zusätzlich in `intern.aenderungslog`.
 
+## Entfernen eines veröffentlichten Angebots (seit 17.11.2026)
+
+Stellt sich heraus, dass ein veröffentlichtes Angebot nicht in den Bestand gehört, wird es auf Entwurf zurückgesetzt: `update public.angebot set oeffentlich = false, aufgenommen_am = null where slug = '…';` Die Angaben bleiben erhalten, das Angebot verschwindet aus Website und Downloads. Damit die Entfernung nachvollziehbar bleibt, kommt ein Eintrag in `site.config.json` unter `entfernungen` (Slug, Anbieter, Angebot, Bereich, Aufnahmetag, Tag der Entfernung, Grund); das Änderungsprotokoll zeigt ihn am Tag der Entfernung im jeweiligen Bereich. Nur auf Vorgabe von Daniel.
+
 ## Gruppen der Übersicht (seit 16.10.2026)
 
-Die Übersicht gliedert Angebote für Endkunden nach dem Merkmal `kopplung` („Gekoppelt an“, Mehrfachauswahl). Die konkreten Produkte stehen in `bedingung` und erscheinen in der Liste als „nur mit …“.
+Die Übersicht gliedert Angebote für Anlagenbetreiber nach dem Merkmal `kopplung` („Gekoppelt an“, Mehrfachauswahl). Die konkreten Produkte stehen in `bedingung` und erscheinen in der Liste als „nur mit …“.
 
 | Werte in `kopplung` | Gruppe | Reihenfolge in der Gruppe |
 |---|---|---|
@@ -103,7 +107,7 @@ Vorgabe Daniel: Pilotprojekte und befristete Aktionen werden aufgenommen, aber n
 
 ## Angebote für Installateure (seit 17.10.2026)
 
-Bereich zwischen den Angeboten für Endkunden und denen für Anbieter für Direktvermarktung, `kategorie_key = 'installateure'`. Ergänzende Information: zählt nicht in die Kennzahlen der Startseite.
+Bereich zwischen den Angeboten für Anlagenbetreiber und denen für Anbieter für Direktvermarktung, `kategorie_key = 'installateure'`. Ergänzende Information: zählt nicht in die Kennzahlen der Startseite.
 
 - Aufnahme: Angebote, mit denen Unternehmen Installationsbetrieben ermöglichen, ihren Kunden Direktvermarktung anzubieten oder zu vermitteln (Partnerprogramm, eigene Marke, Plattform), sofern der Anbieter sie öffentlich beschreibt und sie die Direktvermarktung einschließen oder vom Anbieter ausdrücklich in diesen Zusammenhang gestellt werden. Richtet sich ein Angebot zugleich an Installateure und an Energieversorger oder Hersteller, steht es hier.
 - Merkmale (keine neuen): `status`, gegebenenfalls `status_kurz` und `start_angekuendigt`, `erstmals_veroeffentlicht` (erste Veröffentlichung im Zusammenhang mit der Direktvermarktung, bestimmt die Reihenfolge), `leistungsumfang` (ein bis zwei sachliche Sätze), `zielkunden`, bei Bedarf `hinweis`. Zitate in `originalwortlaut`.
@@ -111,13 +115,17 @@ Bereich zwischen den Angeboten für Endkunden und denen für Anbieter für Direk
 - Gemeinsame Angebote mehrerer Unternehmen stehen beim Unternehmen, das die Direktvermarktung erbringt; die Partner stehen im Namen des Angebots („mit …“).
 - Liegt nur Fachpresse vor, Quelle `medienbericht`; die Startseite markiert das mit „laut Fachpresse“.
 - Neue Angebote wie alle anderen erst als Entwurf, dann veröffentlicht; Änderungen erscheinen im Änderungsprotokoll.
+- Darstellung als schlichte Liste, nicht als Vergleichstabelle (Vorgabe Daniel 17.10.2026, bestätigt am 17.11.2026).
 
 ## Angebote für Anbieter für Direktvermarktung (`dienstleister`)
 
 Bereich am Ende der Startseite, als Tabelle (Anbieter & Angebot, Leistungsumfang, Zielkunden, Links). Ergänzende Information: zählt nicht in die Kennzahlen.
 
-- Reihenfolge: alphabetisch nach Anbieter. Angebote mit unklarem Leistungsumfang stehen am Ende des Bereichs.
-- Unklarer Leistungsumfang: Ist nicht eindeutig belegt, ob der Anbieter die Direktvermarktung selbst erbringt oder nur die technische Anbindung daran (etwa ein HEMS, das an einen Direktvermarkter angebunden wird), wird `leistungsumfang` mit `status = 'unklar'` erfasst. Der Vorbehalt steht in `anmerkung` und erscheint auf der Website unter der Angabe. Die Liste markiert solche Angebote mit „unklar“ und reiht sie ans Ende.
+- **Aufnahme (neu gefasst am 17.11.2026):** Aufgenommen wird, wer **energiewirtschaftliche Prozesse der Direktvermarktung** für andere Unternehmen übernimmt – Stromkauf, Bilanzkreis- und Fahrplanmanagement, Marktkommunikation, Abrechnung. Die technische Steuerung einer Anlage genügt nicht. Lösungen, die eine Anlage nur an die Direktvermarktung eines anderen Unternehmens anbinden (Energiemanagementsysteme, Steuerboxen, Messsysteme), gehören nicht in den Bereich, auch wenn der Anbieter mit der Direktvermarktung wirbt. Grund: Mit „Steuerung“ als Kriterium wäre jeder HEMS-Anbieter aufzunehmen; das trägt zum Vergleich der Direktvermarktung nichts bei.
+- Solche Unternehmen erscheinen weiter dort, wo sie zum Angebot gehören: beim Unternehmen, das vermarktet (gridX bei Nomos, clever-PV und inexogy bei Rabot Energy, Kiwigrid und metrify bei Tibber).
+- Abrechnung allein genügt: Solarize übernimmt den Meter-to-Cash-Prozess der Direktvermarktung und bleibt im Bereich, obwohl Vermarktung, Bilanzkreismanagement, Marktkommunikation und Fernsteuerung beim Kunden bleiben.
+- **Die eigene Rolle muss belegt sein.** Ist nicht belegt, ob ein Anbieter selbst vermarktet oder nur anbindet, bleibt das Angebot Entwurf, bis eine Quelle oder eine Anbieterauskunft die Rolle klärt. Die frühere Regel, solche Fälle mit `leistungsumfang` und `status = 'unklar'` aufzunehmen und ans Ende zu reihen, gilt nicht mehr (eingeführt 19.10.2026, aufgehoben 17.11.2026).
+- Reihenfolge: alphabetisch nach Anbieter.
 
 ## Korrekturen des Startbestands
 
@@ -137,7 +145,7 @@ Korrekturen an Angaben, die schon im Startbestand vom 16.10.2026 hätten richtig
 
 ## Aufnahmekriterien
 
-Aufgenommen wird jedes Angebot, mit dem PV-Anlagen bis 100 kWp (Modulleistung) direkt vermarktet werden, auch in Verbindung mit Stromtarif, Hardware, Community oder Service, gefördert wie ungefördert. „Angekündigt“ verlangt eine öffentliche Ankündigung mit Quelle. Dienstleister und Plattformen, die Prozesse der Direktvermarktung für andere übernehmen, gehören in die Kategorie `dienstleister` (Bereich „Angebote für Anbieter für Direktvermarktung“). Angebote an Installationsbetriebe gehören in die Kategorie `installateure` (siehe oben).
+Aufgenommen wird jedes Angebot, mit dem PV-Anlagen bis 100 kWp (Modulleistung) direkt vermarktet werden, auch in Verbindung mit Stromtarif, Hardware, Community oder Service, gefördert wie ungefördert. „Angekündigt“ verlangt eine öffentliche Ankündigung mit Quelle. Dienstleister und Plattformen, die energiewirtschaftliche Prozesse der Direktvermarktung für andere übernehmen, gehören in die Kategorie `dienstleister` (Bereich „Angebote für Anbieter für Direktvermarktung“); reine Steuerungs- und Energiemanagementlösungen nicht (siehe oben). Angebote an Installationsbetriebe gehören in die Kategorie `installateure` (siehe oben).
 
 ## Veröffentlichung
 

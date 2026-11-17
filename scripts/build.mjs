@@ -318,12 +318,19 @@ function erstVeroeffentlicht(angebot) {
   return e?.wert_datum || null;
 }
 
-// Bereiche der Startseite (Kategorie des Angebots)
-const BEREICH = {
-  endkunden: 'Angebote für Endkunden',
+// Bereiche der Startseite (Kategorie des Angebots). Bezeichnung und Beschreibung kommen aus der
+// Datenbank (Tabelle kategorie), damit eine Umbenennung dort überall greift; die Werte unten sind
+// nur der Rückfall, falls eine Kategorie fehlt.
+const BEREICH_RUECKFALL = {
+  endkunden: 'Angebote für Anlagenbetreiber',
   installateure: 'Angebote für Installateure',
   dienstleister: 'Angebote für Anbieter für Direktvermarktung'
 };
+const ausKatalog = (feld) => Object.fromEntries(daten.kategorie.filter((k) => k[feld]).map((k) => [k.key, k[feld]]));
+const BEREICH = { ...BEREICH_RUECKFALL, ...ausKatalog('bezeichnung') };
+const BESCHREIBUNG = ausKatalog('beschreibung');
+// „Angebote für Anlagenbetreiber“ → „Anlagenbetreiber“, für Beschriftungen wie die Kennzahlen
+const zielgruppe = (kat) => (BEREICH[kat] || '').replace(/^Angebote für /, '');
 
 const BEREICHE_REIHENFOLGE = ['endkunden', 'installateure', 'dienstleister'];
 
@@ -694,7 +701,7 @@ function startseite() {
     <h1>Wer bietet Direktvermarktung für Strom aus kleinen PV&#8209;Anlagen an?</h1>
     <p class="lead">Welche Angebote sind bereits angekündigt und ab wann?</p>
     <dl class="kennzahlen">
-      <div><dt>Anbieter für Endkunden</dt><dd>${anbieterIds.length}</dd></div>
+      <div><dt>Anbieter für ${esc(zielgruppe('endkunden'))}</dt><dd>${anbieterIds.length}</dd></div>
       <div><dt>mit buchbarem Angebot</dt><dd>${anbieterBuchbar}</dd></div>
       <div><dt>nur angekündigt</dt><dd>${anbieterAngekuendigt}</dd></div>
     </dl>
@@ -704,14 +711,14 @@ function startseite() {
 <section class="abschnitt" id="endkunden" aria-labelledby="h-endkunden">
   <div class="rahmen rahmen-liste">
     <div class="abschnitt-kopf">
-      <h2 id="h-endkunden">Angebote für Endkunden</h2>
+      <h2 id="h-endkunden">${esc(BEREICH.endkunden)}</h2>
       ${ansichtWechsel(L, 'start')}
     </div>
     <p class="einleitung">Gegliedert danach, ob die Direktvermarktung an weitere Produkte des Anbieters gekoppelt ist. Gepunktet unterstrichene Angaben zeigen beim Überfahren oder Antippen ihre Quelle.</p>
     ${kiHinweis()}
     <div class="tabelle-rahmen">
       <table class="dvliste">
-        <caption class="sr">Angebote für Endkunden nach Kopplung</caption>
+        <caption class="sr">${esc(BEREICH.endkunden)} nach Kopplung</caption>
         <thead><tr><th scope="col">Kategorie</th><th scope="col">Anbieter &amp; Angebot</th><th scope="col">Status</th><th scope="col">Einschränkungen</th><th scope="col">Vergütungsmodell</th><th scope="col">Preisgestaltung</th><th scope="col">Links</th></tr></thead>
         <tbody>
 ${endkunden.length ? zeilen : '<tr><td colspan="7">Die ersten Einträge werden geprüft.</td></tr>'}
@@ -736,8 +743,8 @@ ${inst || '<li>Die ersten Einträge werden geprüft.</li>'}
 <section class="abschnitt abschnitt-flaeche" id="anbieter" aria-labelledby="h-dl">
   <div class="rahmen">
     <h2 id="h-dl">${BEREICH.dienstleister}</h2>
-    <p class="einleitung">Plattformen und Dienstleistungen für Unternehmen, die selbst Direktvermarktung anbieten wollen.</p>
-    <p class="einleitung">Alphabetisch; Angebote mit unklarem Leistungsumfang stehen am Ende.</p>
+    <p class="einleitung">${esc(BESCHREIBUNG.dienstleister || 'Plattformen und Dienstleistungen für Unternehmen, die selbst Direktvermarktung anbieten wollen.')}</p>
+    <p class="einleitung">Alphabetisch nach Anbieter.</p>
     <div class="tabelle-rahmen">
       <table class="dvliste dl-tabelle">
         <caption class="sr">${BEREICH.dienstleister}</caption>
@@ -1081,6 +1088,18 @@ function aenderungsseite() {
     if (!an) continue;
     eintraege.push({ tag: isoTag(k.erfasst_am), sort: k.erfasst_am, art: k.aenderungsart === 'korrektur' ? 'Korrektur Rechnerabfrage' : 'Rechnerabfrage', bereich: an.kategorie_key, html: `<a href="${L('angebote/' + an.slug)}">${esc(an.name)}</a> · ${esc(referenzfaelle[k.referenzfall_key]?.bezeichnung || 'Eigene Eingaben')}: ${esc(k.ergebnis_kurz || '')} <span class="meta">abgefragt ${datum(k.abgefragt_am)}</span>` });
   }
+  // Entfernte Angebote: vormals veröffentlichte Einträge, die nicht in den Bestand gehören. Sie stehen
+  // als Entwurf in der Datenbank und sind über die öffentliche API nicht lesbar; das Protokoll ist
+  // daher ihre einzige Spur. Gepflegt in site.config.json, kein Link (die Angebotsseite entfällt).
+  for (const e of cfg.entfernungen || []) {
+    const org = e.anbieter || '';
+    const name = org && !String(e.angebot || '').toLowerCase().startsWith(org.toLowerCase()) ? `${org} · ${e.angebot}` : String(e.angebot || '');
+    eintraege.push({
+      tag: e.entfernt_am, sort: e.entfernt_am + ' 2', art: 'Entfernt', bereich: e.bereich || null,
+      html: `${esc(name)} <span class="meta">${e.aufgenommen_am ? `aufgenommen am ${datum(e.aufgenommen_am)} · ` : ''}Grund: ${esc(e.grund || '')}</span>`
+    });
+  }
+
   // Startbestand: alles bis einschließlich cfg.startbestandBis erscheint als ein Eintrag
   const startBis = cfg.startbestandBis;
   if (startBis) {
@@ -1091,7 +1110,7 @@ function aenderungsseite() {
       const dl = imStart.filter((a) => a.kategorie_key === 'dienstleister').length;
       const ins = imStart.filter((a) => a.kategorie_key === 'installateure').length;
       for (let i = eintraege.length - 1; i >= 0; i--) if (eintraege[i].tag <= startBis) eintraege.splice(i, 1);
-      eintraege.push({ tag: startBis, sort: startBis + ' 0', art: 'Startbestand', bereich: null, html: `Erste Veröffentlichung mit ${ek} Angeboten für Endkunden${ins ? `, ${ins} für Installateure` : ''} und ${dl} für Anbieter für Direktvermarktung (damals „für Unternehmen“). Änderungen werden ab dem Folgetag einzeln dokumentiert; Bearbeitungsstände vor der Veröffentlichung stehen in der Datei <a href="${L('daten/aenderungen.csv')}">aenderungen.csv</a>.` });
+      eintraege.push({ tag: startBis, sort: startBis + ' 0', art: 'Startbestand', bereich: null, html: `Erste Veröffentlichung mit ${ek} Angeboten für ${zielgruppe('endkunden')} (damals „für Endkunden“)${ins ? `, ${ins} für Installateure` : ''} und ${dl} für Anbieter für Direktvermarktung (damals „für Unternehmen“). Änderungen werden ab dem Folgetag einzeln dokumentiert; Bearbeitungsstände vor der Veröffentlichung stehen in der Datei <a href="${L('daten/aenderungen.csv')}">aenderungen.csv</a>.` });
     }
   }
   eintraege.sort((a, b) => String(b.sort).localeCompare(String(a.sort)));
@@ -1145,11 +1164,13 @@ function methodikseite() {
 <h2>Gegenstand</h2>
 <p>Das Portal erfasst Angebote, mit denen Betreiber von PV-Anlagen bis 100&nbsp;kWp installierter Modulleistung ihren Strom direkt vermarkten lassen können. Erfasst werden eigenständige Angebote ebenso wie Angebote in Verbindung mit Stromtarif, Hardware, Gemeinschaftsmodellen oder weiteren Leistungen, gefördert wie ungefördert.</p>
 <p>Daneben stehen zwei ergänzende Bereiche: Angebote für Installateure, mit denen Unternehmen Installationsbetrieben ermöglichen, ihren Kundinnen und Kunden Direktvermarktung anzubieten oder zu vermitteln, etwa als Partnerprogramm, unter eigener Marke oder über eine Plattform; und Angebote für Anbieter für Direktvermarktung, also Plattformen und Dienstleistungen für Unternehmen, die selbst Direktvermarktung anbieten wollen.</p>
+<p>Nicht erfasst werden Lösungen, die eine Anlage nur technisch an die Direktvermarktung eines anderen Unternehmens anbinden, etwa Energiemanagementsysteme. Sie erscheinen, wo sie zu einem Angebot gehören, bei dem Unternehmen, das die Direktvermarktung erbringt.</p>
 </section>
 <section>
 <h2>Aufnahme</h2>
 <p>Aufgenommen wird jedes Angebot, zu dem öffentlich zugängliche Informationen vorliegen. Als angekündigt gilt ein Angebot, sobald der Anbieter es öffentlich angekündigt hat. Die Aufnahme setzt keine Mitwirkung des Anbieters voraus.</p>
 <p>Angebote für Installateure werden aufgenommen, wenn der Anbieter sie öffentlich beschreibt und sie die Direktvermarktung einschließen oder vom Anbieter ausdrücklich in diesen Zusammenhang gestellt werden. Richtet sich ein Angebot zugleich an Installateure und an Energieversorger oder Hersteller, steht es bei den Installateuren.</p>
+<p>In den Bereich der Anbieter für Direktvermarktung werden Unternehmen aufgenommen, die energiewirtschaftliche Prozesse der Direktvermarktung für andere übernehmen, etwa Stromkauf, Bilanzkreis- und Fahrplanmanagement, Marktkommunikation oder Abrechnung. Die technische Steuerung oder Anbindung einer Anlage genügt dafür nicht. Ist nicht belegt, welche Rolle ein Anbieter einnimmt, wird das Angebot nicht veröffentlicht.</p>
 </section>
 <section>
 <h2>Angaben und Quellen</h2>
@@ -1160,17 +1181,18 @@ function methodikseite() {
 </section>
 <section>
 <h2>Darstellung und Reihenfolge</h2>
-<p>Die Übersicht gliedert die Angebote für Endkunden danach, ob die Direktvermarktung an weitere Produkte gekoppelt ist (Merkmal „Gekoppelt an“). Ein intelligentes Messsystem ist für die Direktvermarktung fast immer erforderlich und zählt nicht als Kopplung, solange es von einem beliebigen Messstellenbetreiber stammen kann. Ist ein Angebot an Hardware des Anbieters gekoppelt, steht es in der dritten Gruppe, auch wenn zusätzlich ein Stromtarif erforderlich ist. Technische Voraussetzungen, die Geräte beliebiger Hersteller erfüllen können, etwa ein Batteriespeicher oder ein kompatibles Energiemanagement, sind keine Kopplung; sie stehen bei den Einschränkungen unter „nur mit“.</p>
+<p>Die Übersicht gliedert die Angebote für ${esc(zielgruppe('endkunden'))} danach, ob die Direktvermarktung an weitere Produkte gekoppelt ist (Merkmal „Gekoppelt an“). Ein intelligentes Messsystem ist für die Direktvermarktung fast immer erforderlich und zählt nicht als Kopplung, solange es von einem beliebigen Messstellenbetreiber stammen kann. Ist ein Angebot an Hardware des Anbieters gekoppelt, steht es in der dritten Gruppe, auch wenn zusätzlich ein Stromtarif erforderlich ist. Technische Voraussetzungen, die Geräte beliebiger Hersteller erfüllen können, etwa ein Batteriespeicher oder ein kompatibles Energiemanagement, sind keine Kopplung; sie stehen bei den Einschränkungen unter „nur mit“.</p>
 <dl class="glossar">${Object.entries(GRUPPE).filter(([k]) => k !== 'unklar').map(([, g]) => `<div><dt>${esc(g.label)} <span class="meta">${esc(g.sortierung)}</span></dt><dd>${esc(g.text)}</dd></div>`).join('')}</dl>
 <p>In der Gruppe „Ohne weitere Produkte“ stehen die Angebote in der Reihenfolge ihrer ersten auffindbaren Veröffentlichung, in den übrigen Gruppen alphabetisch nach Anbieter. Die Reihenfolge ist keine Bewertung.</p>
 <p>Pilotprojekte und befristete Aktionen (Merkmal „Angebotsform“) werden nicht nach ihrer Kopplung eingereiht. Sie stehen in einer eigenen Gruppe am Ende der Liste, ihre Kopplung steht bei den Einschränkungen, und sie zählen nicht in die Kennzahlen der Startseite.</p>
 <p>Je Angebot zeigt die Übersicht den Status, die Einschränkungen (Kopplung, Leistungsgrenzen, weitere Bedingungen), das Vergütungsmodell und die Preisgestaltung. Die Preisgestaltung fasst zusammen, was Kundinnen und Kunden dem Anbieter zahlen; sie beruht ausschließlich auf Veröffentlichungen der Anbieter. Liegen zu Preisen nur Berichte der Fachpresse vor, steht die Angabe dezenter und mit dem Hinweis „laut Fachpresse“. Alle erfassten Angaben einschließlich Neu- oder Bestandsanlagen und Form der Direktvermarktung stehen in der <a href="${L('detailansicht')}">Detailansicht</a>, Wortlaut, Quellen und frühere Stände auf den Seiten der Angebote.</p>
-<p>Die Angebote für Installateure stehen in der Reihenfolge ihrer ersten auffindbaren Veröffentlichung im Zusammenhang mit der Direktvermarktung, die Angebote für Anbieter für Direktvermarktung alphabetisch; Angebote, deren Leistungsumfang unklar ist (etwa ob die Direktvermarktung selbst angeboten wird oder nur die Anbindung daran), stehen am Ende ihres Bereichs und sind mit „unklar“ und einem Vorbehalt gekennzeichnet. Die Beschreibungen geben knapp und möglichst nah am Wortlaut wieder, was die Quellen nennen; werbende Aussagen werden nicht übernommen. Beide Bereiche sind ergänzende Informationen und fließen nicht in die Kennzahlen der Startseite ein.</p>
+<p>Die Angebote für Installateure stehen in der Reihenfolge ihrer ersten auffindbaren Veröffentlichung im Zusammenhang mit der Direktvermarktung, die Angebote für Anbieter für Direktvermarktung alphabetisch nach Anbieter. Einzelne Angaben, die die Quellen nicht eindeutig belegen, sind mit „unklar“ und einem Vorbehalt gekennzeichnet. Die Beschreibungen geben knapp und möglichst nah am Wortlaut wieder, was die Quellen nennen; werbende Aussagen werden nicht übernommen. Beide Bereiche sind ergänzende Informationen und fließen nicht in die Kennzahlen der Startseite ein.</p>
 <p>Das Portal spricht keine Empfehlungen aus und vergibt keine Rangplätze oder Auszeichnungen, auch nicht gegen Entgelt. Anbieter haben keinen Einfluss auf den Inhalt der Angaben.</p>
 </section>
 <section>
 <h2>Änderungen und Korrekturen</h2>
 <p>Angaben werden nicht überschrieben, sondern fortgeschrieben. Das <a href="${L('aenderungen')}">Änderungsprotokoll</a> unterscheidet Änderungen durch den Anbieter, die ab einem bestimmten Datum gelten, von Korrekturen und Präzisierungen durch das Portal. Der Startbestand vom ${datum(cfg.startbestandBis || '')} erscheint dort als ein Eintrag; seitdem wird jede Änderung mit Datum einzeln aufgeführt. Neue Angebote werden vor der Veröffentlichung als Entwurf erfasst und erscheinen im Protokoll am Tag ihrer Aufnahme.</p>
+<p>Stellt sich heraus, dass ein veröffentlichtes Angebot nicht in den Bestand gehört, wird es entfernt. Das Änderungsprotokoll nennt den Tag der Entfernung und den Grund. Die erfassten Angaben bleiben erhalten, erscheinen aber nicht mehr auf der Website und nicht in den Daten-Downloads.</p>
 <p>Hinweise von Anbietern, Nutzerinnen und Nutzern oder Dritten bitte mit Beleg an <a href="mailto:${esc(cfg.hinweisEmail)}">${esc(cfg.hinweisEmail)}</a>. Übernommene Hinweise erscheinen mit ihrem Anlass im Protokoll.</p>
 </section>
 <section id="referenzfaelle">
@@ -1280,7 +1302,7 @@ ${liste}
 </tbody></table></div>
 <p class="meta">CSV mit Semikolon als Trennzeichen, Dezimalkomma und UTF-8. Mehrfachwerte sind durch senkrechte Striche getrennt. Datenstand ${datum(STAND)}.</p>
 <h2>Verknüpfung</h2>
-<p>Die Spalte <code>kategorie</code> in <code>angebote.csv</code> nennt den Bereich: <code>endkunden</code> (Angebote für Endkunden), <code>installateure</code> (Angebote für Installateure) und <code>dienstleister</code> (Angebote für Anbieter für Direktvermarktung).</p>
+<p>Die Spalte <code>kategorie</code> in <code>angebote.csv</code> nennt den Bereich: <code>endkunden</code> (${esc(BEREICH.endkunden)}), <code>installateure</code> (${esc(BEREICH.installateure)}) und <code>dienstleister</code> (${esc(BEREICH.dienstleister)}).</p>
 <p>Angaben verweisen über <code>angebot</code> auf die Angebote und über <code>quelle_id</code> auf die Quellen. Bedeutung und Ausprägungen der Merkmale stehen in <code>merkmale.csv</code> und auf der Seite <a href="${L('methodik')}">Methodik</a>.</p>
 <h2>Nutzung</h2>
 <p>Für nicht kommerzielle Zwecke, etwa Forschung, Lehre, Berichterstattung und private Auswertungen, stehen die Daten mit Quellenangabe zur Verfügung: ${esc(cfg.portalName)}, ${esc(cfg.betreiber.name)}, Datenstand ${datum(STAND)}, ${esc(cfg.siteUrl.replace('https://', ''))}.</p>
@@ -1371,4 +1393,4 @@ await schreibe('robots.txt', VORSCHAU ? 'User-agent: *\nDisallow: /\n' : `User-a
 const urls = ['', 'detailansicht/', 'aenderungen/', 'daten/', 'methodik/', 'impressum/', 'datenschutz/', ...alleAngebote.map((a) => `angebote/${a.slug}/`)];
 await schreibe('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((u) => `  <url><loc>${cfg.siteUrl}/${u}</loc></url>`).join('\n')}\n</urlset>\n`);
 
-console.log(`Fertig: ${endkunden.length} Angebote für Endkunden, ${installateure.length} für Installateure, ${dienstleister.length} für Anbieter, Stand ${STAND}${VORSCHAU ? ' (VORSCHAU mit Entwürfen)' : ''} → ${path.relative(ROOT, OUT) || '.'}`);
+console.log(`Fertig: ${endkunden.length} Angebote für ${zielgruppe('endkunden')}, ${installateure.length} für Installateure, ${dienstleister.length} für Anbieter, Stand ${STAND}${VORSCHAU ? ' (VORSCHAU mit Entwürfen)' : ''} → ${path.relative(ROOT, OUT) || '.'}`);

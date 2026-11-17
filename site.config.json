@@ -19,6 +19,17 @@
     "vertreten": "Daniel Fürstenwerth, Geschäftsführer",
     "verantwortlich": "Daniel Fürstenwerth"
   },
+  "entfernungen": [
+    {
+      "slug": "beegy-hems-direktvermarktung",
+      "anbieter": "beegy",
+      "angebot": "beegy HEMS mit Anbindung an die Direktvermarktung",
+      "bereich": "dienstleister",
+      "aufgenommen_am": "2026-10-19",
+      "entfernt_am": "2026-11-17",
+      "grund": "Review der Methodik: Anbieter, die ausschließlich Energiemanagement oder Steuerung anbieten, ohne die Vermarktung selbst zu unterstützen, gehören nicht in diesen Bereich."
+    }
+  ],
   "methodikVersionen": [
     {
       "datum": "2026-10-16",
@@ -51,6 +62,10 @@
     {
       "datum": "2026-10-31",
       "text": "Neues Merkmal „Beginn der Vermarktung“: ab wann der Anbieter den Strom tatsächlich vermarktet oder vergütet, wenn das vom Vertragsabschluss oder von der Buchbarkeit abweicht. Angebote, die vor ihrer Aufnahme als Entwurf erfasst wurden, erscheinen im Änderungsprotokoll am Tag der Aufnahme."
+    },
+    {
+      "datum": "2026-11-17",
+      "text": "Review des Bereichs „Angebote für Anbieter für Direktvermarktung“: Aufgenommen wird nur, wer energiewirtschaftliche Prozesse der Direktvermarktung übernimmt, etwa Stromkauf, Bilanzkreis- und Fahrplanmanagement, Marktkommunikation oder Abrechnung. Anbieter, die ausschließlich Energiemanagement oder Steuerung anbieten, ohne die Vermarktung selbst zu unterstützen, gehören nicht dazu; ein Eintrag wurde deshalb entfernt. Ist nicht belegt, welche Rolle ein Anbieter einnimmt, wird das Angebot nicht veröffentlicht. Entfernte Angebote stehen mit Tag und Grund im Änderungsprotokoll. Der erste Bereich heißt jetzt „Angebote für Anlagenbetreiber“ statt „Angebote für Endkunden“."
     }
   ],
   "startbestandBis": "2026-10-16"
